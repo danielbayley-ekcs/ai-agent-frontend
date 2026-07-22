@@ -1,19 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mediaferry Designer Agent</title>
-  <link rel="stylesheet" href="/static/styles.css">
-</head>
-<body>
-  <header>Mediaferry Designer Agent</header>
-  <div id="messages"></div>
-  <div id="input-area">
-    <input type="text" id="message-input" placeholder="Type a message..." autocomplete="off">
-    <button id="send-btn" disabled>Send</button>
-  </div>
-  <script src="/static/script.js">
-  </script>
-</body>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mediaferry AI</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <header>
+      <h1>Mediaferry AI</h1>
+    </header>
+    <main>
+    </main>
+    <footer>
+      <input id="message-input" type="text" required minlength="1" maxlength="190" autofocus autocomplete="off" autocapitalize="sentences" placeholder="Type a message…">
+      <button disabled>
+        <object type="image/svg+xml" data="/static/icons/corner-down-left.svg" title="Return arrow icon" aria-hidden>
+        </object>
+      </button>
+    </footer>
+    <script type="module" src="/static/script.js">
+    </script>
+  </body>
 </html>
