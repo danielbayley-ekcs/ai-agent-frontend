@@ -1,0 +1,32 @@
+#brand-picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing);
+  padding: 14px var(--spacing);
+  width: fit-content;
+  background-color: white;
+  border: var(--border);
+  border-radius: var(--corner-round);
+  div {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: var(--spacing-half);
+    width: 100%;
+  }
+}
+
+#brands {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-half);
+}
+
+select {
+  width: inherit;
+  padding: var(--spacing-half);
+  appearance: none;
+  background-color: transparent;
+  border:  var(--border);
+  border-radius: var(--corner-round);
+  &:focus-visible { outline: var(--border-outline) }
+}
