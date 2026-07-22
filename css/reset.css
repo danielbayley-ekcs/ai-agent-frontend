@@ -1,0 +1,23 @@
+/*
+https://piccalil.li/blog/a-more-modern-css-reset
+https://joshwcomeau.com/css/custom-css-reset#two-remove-default-margin-3
+https://joshwcomeau.com/css/custom-css-reset#one-box-sizing-model-2
+*/
+*, *::before, *::after {
+  box-sizing: border-box;
+  &:not(dialog) { margin: 0 }
+  padding: 0;
+}
+
+body { height: 100vh }
+
+/* https://joshwcomeau.com/css/custom-css-reset#six-improve-media-defaults-7 */
+img, picture, video, canvas, iframe, object, svg:not([class*=icon]) {
+  display: block;
+  max-width: 100%;
+}
+
+iframe { border: none }
+
+/* https://joshwcomeau.com/css/custom-css-reset#seven-inherit-fonts-for-form-controls-8 */
+input, textarea, button, select { font: inherit }
