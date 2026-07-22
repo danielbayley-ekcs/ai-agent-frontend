@@ -1,0 +1,36 @@
+body, header, nav, main, footer { display: flex }
+body, main { flex-direction: column }
+
+body {
+  color: var(--color-text-grey);
+  background-color: var(--color-bg);
+}
+
+header, main, footer {
+  padding: var(--spacing);
+  overflow-x: clip;
+}
+
+header {
+  justify-content: space-between;
+  color: white;
+  background-color: var(--color-primary);
+  border-bottom: 0.25rem solid var(--color-bg);
+  outline: 0.5rem solid var(--color-tertiary);
+  z-index: 1;
+
+  button { padding: 0 }
+}
+
+main {
+  flex: 1;
+  overflow-y: auto;
+}
+
+main { gap: var(--spacing) }
+nav, footer { gap: var(--spacing-half) }
+
+footer {
+  background-color: white;
+  border-top: var(--border);
+}
