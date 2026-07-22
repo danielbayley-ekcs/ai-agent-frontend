@@ -1,0 +1,48 @@
+button {
+  width: fit-content;
+  padding-inline: var(--spacing);
+  padding-block:  var(--spacing-half);
+
+  color: white;
+  background-color: var(--color-primary);
+  border: var(--border);
+  border-color: transparent;
+  border-radius: var(--corner-round);
+
+  &:focus-visible { outline: var(--border-outline) }
+  cursor: pointer;
+}
+
+*:disabled, .disabled {
+  pointer-events: none;
+  cursor: text;
+  &:not(.selected) { opacity: 50% }
+}
+
+
+.quick-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-self: flex-start;
+  gap: var(--spacing-half);
+  padding: 2px 4px;
+}
+
+.quick-chip, .format-chip {
+  white-space: nowrap;
+  padding-inline: var(--spacing);
+  padding-block:  var(--spacing-half);
+  color: white;
+  background-color: var(--color-primary);
+  border: var(--border);
+  border-color: transparent;
+  border-radius: var(--corner-round);
+  cursor: pointer;
+}
+
+.selected {
+  color: revert;
+  background-color: white;
+  border: var(--border);
+  border-color: var(--color-primary);
+}
