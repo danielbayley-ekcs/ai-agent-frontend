@@ -1,0 +1,8 @@
+ol li::marker { font-weight: 700 }
+ul, ol { list-style-position: inside }
+ul { list-style: none }
+
+:where(ol, ul)::before {
+  content: "\A";
+  white-space: pre;
+}
