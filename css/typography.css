@@ -1,0 +1,41 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
+/*
+https://joshwcomeau.com/css/custom-css-reset#eight-avoid-text-overflows-9
+https://joshwcomeau.com/css/custom-css-reset#nine-improve-line-wrapping-10
+*/
+
+html { text-size-adjust: none }
+body {
+  font-family: Montserrat, sans-serif;
+  line-height: 1.5;
+
+  &, p, label { text-wrap: pretty }
+  -webkit-font-smoothing: antialiased;
+}
+
+:is(h1, h2, h3, h4, h5, h6), p, label {
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+h4 {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+label {
+  cursor: text;
+  &:not(.progress-label) {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+}
+
+.message { white-space: pre-wrap }
