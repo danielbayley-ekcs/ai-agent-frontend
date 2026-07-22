@@ -1,0 +1,22 @@
+input[type=text] {
+  flex: 1;
+
+  padding-inline: 12px;
+  padding-block: 8px;
+
+  font-family: Montserrat, sans-serif;
+  font-size: 1rem;
+  overflow: hidden;
+
+  border: var(--border);
+  border-radius: var(--corner-round);
+  box-shadow: none;
+
+  &:invalid:not(:placeholder-shown) { border-color: var(--color-error) }
+  &:focus-visible { outline: var(--border-outline); }
+
+  &:disabled {
+    color: var(--color-primary);
+    background-color: var(--color-disabled);
+  }
+}
