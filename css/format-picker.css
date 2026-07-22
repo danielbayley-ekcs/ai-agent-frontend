@@ -1,0 +1,26 @@
+.format-picker,
+.format-picker-columns,
+.format-picker-section,
+.format-picker-chips { display: flex }
+
+.format-picker-section,
+.format-picker {
+  flex-direction: column;
+  &, .format-picker-columns { gap: var(--spacing) }
+}
+
+.format-picker {
+  padding: var(--spacing);
+  background-color: white;
+  border: var(--border);
+  border-radius: var(--corner-round);
+}
+
+.format-picker-section { gap: var(--spacing) }
+
+.format-picker-chips {
+  flex-wrap: wrap;
+  gap: var(--spacing-half);
+}
+
+.format-picker-ok { align-self: end }
