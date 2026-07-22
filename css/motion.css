@@ -1,0 +1,19 @@
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-play-state: paused !important;
+    transition: none !important;
+  }
+}
+
+:root {
+  --time: 1s;
+  --time-double:  calc(var(--time) * 2);
+  --time-half:    calc(var(--time) / 2);
+  --time-quarter: calc(var(--time) / 4);
+
+  --ease: ease-in-out;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html { interpolate-size: allow-keywords }
+}
