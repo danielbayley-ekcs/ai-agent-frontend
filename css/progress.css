@@ -1,0 +1,28 @@
+.progress-card {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  gap: var(--spacing-half);
+  padding: var(--spacing);
+
+  background-color: white;
+  border: var(--border);
+  border-radius: var(--corner-round);
+  cursor: text;
+}
+
+.progress-loader {
+  flex-shrink: 0;
+  animation: heartbeat var(--time) var(--ease) infinite;
+}
+
+.progress-loader::before {
+  content: var(--icon-thinking);
+  position: relative;
+  top: 0.25cap;
+}
+
+@keyframes heartbeat {
+  50% { scale: 1 }
+  33%, 66% { scale: 110% }
+}
