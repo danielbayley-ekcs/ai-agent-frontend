@@ -2,31 +2,6 @@
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: var(--spacing-half);
-  padding-bottom: var(--spacing);
-}
-
-figure {
-  border: var(--border);
-  border-radius: var(--corner-round);
-  overflow-x: hidden;
-  transition: border-color var(--time-quarter);
-  cursor: pointer;
-
-  &:hover:not(.disabled) { border-color: var(--color-primary) }
-
-  img {
-    width: 100%;
-    height: 8rem;
-    object-fit: contain;
-    background-color: var(--color-grey-light);
-  }
-
-  figcaption { background-color: white }
-}
-
-.template-cell-name {
-  padding: var(--spacing-half);
-  text-align: center;
 }
 
 .template-cell-placeholder {
