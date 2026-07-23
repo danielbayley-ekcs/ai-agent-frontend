@@ -1,7 +1,8 @@
-button {
+button, [role=button] {
   width: fit-content;
-  padding-inline: var(--spacing);
-  padding-block:  var(--spacing-half);
+  text-wrap: nowrap;
+
+  &:not(footer &) { padding-top: 2.5ex }
 
   color: white;
   background-color: var(--color-primary);
@@ -11,7 +12,21 @@ button {
 
   &:focus-visible { outline: var(--border-outline) }
   cursor: pointer;
+
+  &::before {
+    position: relative;
+    top: 0.5cap;
+    margin-inline-end: 1ch;
+  }
 }
+
+a[role=button] {
+  display: block;
+  text-decoration: none;
+  &::before { content: var(--icon-external-link) }
+}
+
+footer button { padding-block: 1ex }
 
 *:disabled, .disabled {
   pointer-events: none;
@@ -19,26 +34,16 @@ button {
   &:not(.selected) { opacity: 50% }
 }
 
+.system-choose-btn::before { content: var(--icon-random) }
 
 .quick-chips {
   display: flex;
   flex-wrap: wrap;
   align-self: flex-start;
   gap: var(--spacing-half);
-  padding: 2px 4px;
 }
 
-.quick-chip, .format-chip {
-  white-space: nowrap;
-  padding-inline: var(--spacing);
-  padding-block:  var(--spacing-half);
-  color: white;
-  background-color: var(--color-primary);
-  border: var(--border);
-  border-color: transparent;
-  border-radius: var(--corner-round);
-  cursor: pointer;
-}
+[class*=picker] [class*=chip] { border-radius: 50vh }
 
 .selected {
   color: revert;
