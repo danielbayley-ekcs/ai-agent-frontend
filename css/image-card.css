@@ -1,0 +1,24 @@
+figure {
+  overflow-x: hidden;
+  border: var(--border);
+  border-radius: var(--corner-round);
+  transition: border-color var(--time-quarter);
+  cursor: pointer;
+
+  &:not(.disabled, [class*=preview]):hover { border-color: var(--color-primary) }
+
+  img {
+    width: 100%;
+    height: 8rem;
+    &, iframe {
+      object-fit: contain;
+      background-color: var(--color-grey-light);
+    }
+  }
+
+  figcaption {
+    text-align: center;
+    background-color: white;
+    &::after { content: var(--icon-copy) }
+  }
+}
