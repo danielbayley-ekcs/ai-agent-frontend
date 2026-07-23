@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  width="24"
+  height="24"
+  fill="none"
+  stroke="currentcolor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  class="lucide lucide-brain-icon lucide-brain"
+  role="img"
+  aria-labelledby="title description">
+  <title id="title">Brain</title>
+  <desc id="description">Brain icon.</desc>
+  <path d="M12 18a4 4 0 01-8 0 4 4 0 01.03-.51"/>
+  <path d="M12 5v3.5A4.494 4.494 0 017.5 13"/>
+  <path d="M18 18a4 4 0 004-4 4 4 0 00-2.44-3.69"/>
+  <path d="M19.97 17.49A4 4 0 1116 14"/>
+  <path d="M20.38 10.78A4.43 4.43 0 0018 4.26"/>
+  <path d="M3.62 10.78A4.43 4.43 0 016 4.26"/>
+  <path d="M6 18a4 4 0 01-4-4 4 4 0 012.44-3.69"/>
+  <path d="M6.24 6.17A3 3 0 1112 5a3 3 0 016 0 2.9 2.9 0 01-.24 1.17"/>
+</svg>
