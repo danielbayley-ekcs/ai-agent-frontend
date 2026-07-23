@@ -1,3 +1,5 @@
+import snarkdown from "https://esm.sh/snarkdown@2.0.0"
+
 const maxBrandSelect = 16
 
 const sessionId = typeof crypto.randomUUID === "function"
@@ -32,26 +34,9 @@ function renderMarkdown(text) {
   const escaped = text
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+    .replace(/>/g, "&gt;")
 
-  // Convert markdown ** to <strong> tags
-  let md = escaped.replace(/\*{2}(.+?)\*{2}/g, '<strong>$1</strong>');
-
-  // Convert markdown ``` to <code> tags
-  md = md.replace(/`{2}(.+)`{2}/gm, '<code>$1</code>');
-
-  // Convert markdown images ![alt](url) to plain <img> tags (no link — prevents download on click)
-  md = md.replace(
-    /!\[([^\]]*)\]\((https?:\/\/[^\)]+)\)/g,
-    '<img src="$2" alt="$1" style="max-width:100%;max-height:600px;object-fit:contain;border-radius:6px;margin-top:6px;display:block;">',
-  );
-
-  // Convert markdown links [text](url) to <a> tags
-  return md.replace(
-    /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g,
-    (_, text, url) =>
-      `<a href="${url}" target="_blank" rel="noopener">${text}</a>`,
-  );
+  return snarkdown(escaped)
 }
 
 function appendMessage(text, type) {
