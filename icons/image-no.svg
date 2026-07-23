@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 30 25"
+  width="30"
+  height="25"
+  class="placeholder"
+  role="img"
+  aria-labelledby="title description">
+  <title id="title">No Image</title>
+  <desc id="description">Missing image icon.</desc>
+  <style type="text/css">
+    :root {
+      --color-grey-light: #f3f4f6;
+      --color-bg: #c9d4df;
+    }
+    path, line {
+      fill: none;
+      stroke: var(--color-grey-light);
+      stroke-width: 1;
+      stroke-linecap:  round;
+      stroke-linejoin: round;
+    }
+    rect { fill: var(--color-bg) }
+  </style>
+  <rect width="100%" height="100%"/>
+  <path d="M14.37 9.04a5.37 5.37 0 0 1 5.6 3.29c.04.11.04.24 0 .35-.18.45-.43.86-.72 1.24m-3.21-.34c-.6.58-1.55.56-2.12-.04-.56-.58-.56-1.5 0-2.08"/>
+  <path d="M17.74 15.25a5.37 5.37 0 0 1-7.36-1.89c-.13-.22-.25-.45-.34-.69a.53.53 0 0 1 0-.35 5.3 5.3 0 0 1 2.22-2.57M10 7.5l10 10"/>
+</svg>
