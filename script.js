@@ -1,15 +1,31 @@
-const sessionId = typeof crypto.randomUUID === 'function'
-  ? crypto.randomUUID()
-  : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-      const r = Math.random() * 16 | 0;
-      return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
-    });
-const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-const ws = new WebSocket(`${proto}://${location.host}/ws/${sessionId}`);
+const maxBrandSelect = 16
 
-const messagesEl = document.getElementById('messages');
-const inputEl    = document.getElementById('message-input');
-const sendBtn    = document.getElementById('send-btn');
+const sessionId = typeof crypto.randomUUID === "function"
+  ? crypto.randomUUID()
+  : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, char => {
+    const random = Math.random() * 16 | 0
+    return (char === "x" ? random : (random & 0x3 | 0x8)).toString(16)
+  })
+
+const proto = location.protocol === "https:" ? "wss" : "ws"
+const ws = new WebSocket(`${proto}://${location.host}/ws/${sessionId}`)
+
+const [messages] = document.getElementsByTagName("main")
+const input      = document.querySelector("footer input")
+const submit     = document.querySelector("footer button")
+
+function createElement(tagName, attributes = {}, options) {
+  const element = document.createElement(tagName, options)
+  if (attributes.textContent) attributes["data-content"] ??= attributes.textContent
+
+  for (const name in attributes)
+    if (element.setAttribute && element[name] in element)
+      element.setAttribute(name, attributes[name])
+    else
+      element[name] = attributes[name]
+
+  return element
+}
 
 function renderMarkdown(text) {
   // Escape HTML to prevent injection
@@ -20,9 +36,6 @@ function renderMarkdown(text) {
 
   // Convert markdown ** to <strong> tags
   let md = escaped.replace(/\*{2}(.+?)\*{2}/g, '<strong>$1</strong>');
-
-  // TODO: Render `-` lists as <ul>/<li>
-  //md = md.replace(/^-\s+(.+)\s*$/g, '<li>$1</li>');
 
   // Convert markdown ``` to <code> tags
   md = md.replace(/`{2}(.+)`{2}/gm, '<code>$1</code>');
@@ -42,433 +55,456 @@ function renderMarkdown(text) {
 }
 
 function appendMessage(text, type) {
-  const div = document.createElement('div');
-  div.className = `message ${type}`;
-  if (type === 'received' || type === 'error') {
-    div.innerHTML = renderMarkdown(text);
-  } else {
-    div.textContent = text;
-  }
-  messagesEl.appendChild(div);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+  const tagName = (type?.includes("connect") || type === "error") ? "h5" : "section"
+  const element = createElement(tagName, { className: `message ${type}` })
+
+  if (type === "received" || type === "error")
+    element.innerHTML = renderMarkdown(text)
+  else
+    element.textContent = text
+
+  messages.appendChild(element)
+  messages.scrollTop = messages.scrollHeight
 }
 
 function renderFormatPicker(data) {
-  // Must match the "Picture + Offer" compatibility rule in prompts.py.
-  const PICTURE_OFFER_STYLES = new Set(['Classic', 'Chic', 'Modern']);
-  const isDigital = data.size_label === 'Ad Format';
-  // Digital sizes are multi-select (array); print size and style/theme are single-select.
+  const isDigital = data.size_label === "Ad Format"
+
+  // Digital sizes are multi-select (array) print size and style/theme are single-select.
   const selections = {
-    size:  isDigital ? (data.preselected_size ? [data.preselected_size] : []) : (data.preselected_size || null),
+    size: isDigital ? (data.preselected_size ? [data.preselected_size] : []) : (data.preselected_size || null),
     style: data.preselected_style || null,
     theme: data.preselected_theme || null,
-  };
+  }
 
-  const hasSizes  = Array.isArray(data.sizes)  && data.sizes.length  > 0;
-  const hasStyles = Array.isArray(data.styles) && data.styles.length > 0;
-  const hasThemes = Array.isArray(data.themes) && data.themes.length > 0;
+  const hasSizes  = Array.isArray(data.sizes)  && data.sizes.length  > 0
+  const hasStyles = Array.isArray(data.styles) && data.styles.length > 0
+  const hasThemes = Array.isArray(data.themes) && data.themes.length > 0
 
   // If nothing needs selecting, send immediately without showing a picker
   if (!hasSizes && !hasStyles && !hasThemes) {
-    const sizeVal = isDigital ? selections.size.join(' + ') : selections.size;
-    const parts = [sizeVal, selections.style, selections.theme].filter(Boolean);
-    if (parts.length) sendMessageText(parts.join(', '));
-    return;
+    const sizeVal = isDigital ? selections.size.join(" + ") : selections.size
+    const parts = [sizeVal, selections.style, selections.theme].filter(Boolean)
+    if (parts.length) sendMessageText(parts.join(", "))
+    return
   }
 
-  const container = document.createElement('div');
-  container.className = 'format-picker';
+  const className = "format-picker"
+  const section = createElement("section", {className})
 
-  const validationMsg = document.createElement('div');
-  validationMsg.className = 'format-picker-validation';
+  const ok = createElement("button", {
+    className: "format-picker-ok",
+    textContent: "OK",
+    disabled: true,
+  })
 
-  const okBtn = document.createElement('button');
-  okBtn.className = 'format-picker-ok';
-  okBtn.textContent = 'OK';
-  okBtn.disabled = true;
+  function makeSection(key, label, options, multiSelect = false) {
+    if (!options || !options.length) return null
+    const div = createElement("div", { className: `${className}-section` })
 
-  function updateOk() {
-    const sizeOk  = !hasSizes  || (isDigital ? selections.size.length > 0 : !!selections.size);
-    const styleOk = !hasStyles || !!selections.style;
-    const themeOk = !hasThemes || !!selections.theme;
-    const incompatible = selections.theme === 'Picture + Offer'
-                      && !!selections.style
-                      && !PICTURE_OFFER_STYLES.has(selections.style);
-    if (incompatible) {
-      validationMsg.textContent = '"Picture + Offer" is only available with Classic, Chic, or Modern.';
-      validationMsg.style.display = 'block';
-    } else {
-      validationMsg.style.display = 'none';
-    }
-    okBtn.disabled = !(sizeOk && styleOk && themeOk && !incompatible);
-  }
+    div.appendChild(createElement("label", {
+      className: `${className}-label`,
+      textContent: label + (multiSelect ? " (select one or more)" : ""),
+    }))
 
-  function makeSection(key, label, options, multiSelect) {
-    if (!options || !options.length) return null;
-    const section = document.createElement('div');
-    section.className = 'format-picker-section';
-    const lbl = document.createElement('div');
-    lbl.className = 'format-picker-label';
-    lbl.textContent = label + (multiSelect ? ' (select one or more)' : '');
-    section.appendChild(lbl);
-    const chips = document.createElement('div');
-    chips.className = 'format-picker-chips';
-    options.forEach(opt => {
-      const chip = document.createElement('div');
-      chip.className = 'format-chip';
-      chip.textContent = opt;
-      chip.addEventListener('click', () => {
+    const chips = createElement("div", { className: `${className}-chips` })
+    options.forEach(textContent => {
+      const className = "format-chip"
+      const chip = createElement("button", { className, textContent })
+
+      chip.addEventListener("click", () => {
         if (multiSelect) {
-          chip.classList.toggle('selected');
-          if (chip.classList.contains('selected')) {
-            selections[key].push(opt);
-          } else {
-            selections[key] = selections[key].filter(v => v !== opt);
-          }
+          chip.classList.toggle("selected")
+          if (chip.classList.contains("selected"))
+            selections[key].push(textContent)
+          else
+            selections[key] = selections[key].filter(out => out !== textContent)
         } else {
-          chips.querySelectorAll('.format-chip').forEach(c => c.classList.remove('selected'));
-          chip.classList.add('selected');
-          selections[key] = opt;
+          const formatChips = chips.querySelectorAll(`.${className}`)
+          formatChips.forEach(element => element.classList.remove("selected"))
+          chip.classList.add("selected")
+          selections[key] = textContent
         }
-        updateOk();
-      });
-      chips.appendChild(chip);
-    });
-    section.appendChild(chips);
-    return section;
+        const sizeOk  = !hasSizes  || (isDigital ? selections.size.length > 0 : !!selections.size)
+        const styleOk = !hasStyles || !!selections.style
+        const themeOk = !hasThemes || !!selections.theme
+
+        ok.disabled = !(sizeOk && styleOk && themeOk)
+      })
+      chips.appendChild(chip)
+    })
+    div.appendChild(chips)
+    return div
   }
 
-  const sizeSection  = makeSection('size',  data.size_label || 'Page Size', data.sizes, isDigital);
-  const styleSection = makeSection('style', 'Style',     data.styles, false);
-  const themeSection = makeSection('theme', 'Theme',     data.themes, false);
+  const sizeSection  = makeSection("size",  data.size_label || "Page Size", data.sizes, isDigital) //:",
+  const styleSection = makeSection("style", "Style", data.styles)
+  const themeSection = makeSection("theme", "Theme", data.themes)
 
   // Sections in a horizontal row so all are visible at once
-  const sectionsRow = document.createElement('div');
-  sectionsRow.className = 'format-picker-sections';
-  if (sizeSection)  sectionsRow.appendChild(sizeSection);
-  if (styleSection) sectionsRow.appendChild(styleSection);
-  if (themeSection) sectionsRow.appendChild(themeSection);
-  container.appendChild(sectionsRow);
+  const sectionsRow = createElement("section", { className: "format-picker-columns" })
+  if (sizeSection)  sectionsRow.appendChild(sizeSection)
+  if (styleSection) sectionsRow.appendChild(styleSection)
+  if (themeSection) sectionsRow.appendChild(themeSection)
+  section.appendChild(sectionsRow)
 
-  container.appendChild(validationMsg);
+  ok.addEventListener("click", () => {
+    const chips = section.querySelectorAll(".format-chip")
+    chips.forEach(element => element.classList.add("disabled"))
+    ok.disabled = true
 
-  okBtn.addEventListener('click', () => {
-    container.querySelectorAll('.format-chip').forEach(c => c.classList.add('disabled'));
-    okBtn.disabled = true;
-    const sizeVal = isDigital ? selections.size.join(' + ') : selections.size;
-    const parts = [sizeVal, selections.style, selections.theme].filter(Boolean);
-    sendMessageText(parts.join(', '));
-  });
+    const sizeVal = isDigital ? selections.size.join(" + ") : selections.size
+    const parts = [sizeVal, selections.style, selections.theme].filter(Boolean)
+    sendMessageText(parts.join(", "))
+  })
 
-  const footer = document.createElement('div');
-  footer.className = 'format-picker-footer';
-  footer.appendChild(okBtn);
-  container.appendChild(footer);
+  section.appendChild(ok)
 
-  messagesEl.appendChild(container);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
-  // Initialise button state in case preselected values already satisfy all requirements
-  updateOk();
+  messages.appendChild(section)
+  messages.scrollTop = messages.scrollHeight
 }
 
-let _progressCard = null;
 
-function renderProgressCard(label) {
+let _progressCard = null
+
+function renderProgressCard(textContent) {
   if (_progressCard) {
-    _progressCard.querySelector('.progress-label').textContent = label;
-    return;
+    const __progressCard = _progressCard.querySelector(".progress-label")
+    __progressCard.textContent = textContent
+    return
   }
-  const card = document.createElement('div');
-  card.className = 'progress-card';
-  const spinner = document.createElement('div');
-  spinner.className = 'progress-spinner';
-  card.appendChild(spinner);
-  const lbl = document.createElement('div');
-  lbl.className = 'progress-label';
-  lbl.textContent = label;
-  card.appendChild(lbl);
-  messagesEl.appendChild(card);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
-  _progressCard = card;
+
+  const card  = createElement("section", { className: "progress-card" })
+  const div   = createElement("div",     { className: "progress-loader" })
+  const label = createElement("label",   { className: "progress-label", textContent })
+
+  card.append(div, label)
+  messages.appendChild(card)
+  messages.scrollTop = messages.scrollHeight
+  _progressCard = card
 }
 
 function updateProgressCard(label) {
-  if (_progressCard) _progressCard.querySelector('.progress-label').textContent = label;
+  if (_progressCard) _progressCard.querySelector(".progress-label").textContent = label
 }
 
 function removeProgressCard() {
-  if (_progressCard) { _progressCard.remove(); _progressCard = null; }
+  if (_progressCard) {
+    _progressCard.remove()
+    _progressCard = null
+  }
 }
 
 function renderPreviewCard(data) {
-  const card = document.createElement('div');
-  card.className = 'preview-card';
+  const card    = createElement("section", { className: "preview-card" })
+  const wrapper = createElement("figure",  { className: "preview-card-iframe-wrapper" })
 
-  if (data.stream === 'digital' && data.adUrl) {
-    const w = data.adWidth || 300;
-    const h = data.adHeight || 250;
-    const wrapper = document.createElement('div');
-    wrapper.className = 'preview-card-iframe-wrapper';
-    wrapper.style.cssText = `width:${w}px;height:${h}px;`;
-    const iframe = document.createElement('iframe');
-    iframe.src = data.adUrl;
-    iframe.width = w;
-    iframe.height = h;
-    iframe.style.cssText = 'border:none;display:block;';
-    iframe.setAttribute('scrolling', 'no');
-    wrapper.appendChild(iframe);
-    card.appendChild(wrapper);
-  } else if (data.jpgUrl) {
-    const img = document.createElement('img');
-    img.className = 'preview-card-img';
-    img.style.cssText = 'display:block;max-width:100%;max-height:450px;width:auto;height:auto;margin:0 auto;';
-    img.src = data.jpgUrl;
-    img.alt = 'Ad preview';
-    card.appendChild(img);
-  }
+  if (data.stream === "digital" && data.adUrl) {
+    const width  = data.adWidth  || 300
+    const height = data.adHeight || 250
 
-  const footer = document.createElement('div');
-  footer.className = 'preview-card-footer';
+    const iframe = createElement("iframe", {
+      src: data.adUrl,
+      width,
+      height,
+      scrolling: "no",
+    })
 
-  const id = document.createElement('div');
-  id.className = 'preview-card-id';
-  id.textContent = data.projectId ? `Project: ${data.projectId}` : '';
-  footer.appendChild(id);
+    wrapper.appendChild(iframe)
+    card.appendChild(wrapper)
 
-  const btns = document.createElement('div');
-  btns.className = 'preview-card-btns';
+  } else if (data.jpgUrl) card.appendChild(createElement("img", {
+    className: "preview-card-img",
+    src: data.jpgUrl,
+    alt: "Ad preview",
+    //style,
+  }))
 
-  if (data.stream === 'digital') {
+  if (data.projectId) wrapper.appendChild(createElement("figcaption", {
+    className: "preview-card-footer",
+    textContent: `Project: ${data.projectId}`,
+  }))
+
+  const className = "preview-card-btn"
+  const buttons = createElement("div", { className: `${className}s` })
+
+  if (data.stream === "digital") {
     if (data.adUrl && data.showPrimaryButton) {
-      const btn = document.createElement('a');
-      btn.className = 'preview-card-btn';
-      btn.href = data.adUrl;
-      btn.target = '_blank';
-      btn.rel = 'noopener';
-      btn.textContent = 'View ' + ((data.adName || '').replace(/^Digital_/i, '').trim() || 'Ad');
-      btns.appendChild(btn);
+      buttons.appendChild(createElement("a", {
+        className,
+        role: "button",
+        href: data.adUrl,
+        target: "_blank",
+        rel: "noopener",
+        textContent: "View " + ((data.adName || "").replace(/^Digital_/i, "").trim() || "Ad"),
+      }))
     }
-    (data.extraAds || []).forEach(extra => {
-      if (!extra.url) return;
-      const label = (extra.name || '').replace(/^Digital_/i, '').trim() || 'View Ad';
-      const btn = document.createElement('a');
-      btn.className = 'preview-card-btn';
-      btn.href = extra.url;
-      btn.target = '_blank';
-      btn.rel = 'noopener';
-      btn.textContent = `View ${label}`;
-      btns.appendChild(btn);
-    });
-    if (data.previewUrl) {
-      const btn = document.createElement('a');
-      btn.className = 'preview-card-btn';
-      btn.href = data.previewUrl;
-      btn.target = '_blank';
-      btn.rel = 'noopener';
-      btn.textContent = 'Preview all sizes';
-      btns.appendChild(btn);
-    }
+
+    const extraAds = data.extraAds || []
+    extraAds.forEach(extra => {
+      if (!extra.url) return
+
+      const label = (extra.name || "").replace(/^Digital_/i, "").trim() || "View Ad"
+
+      buttons.appendChild(createElement("a", {
+        className,
+        role: "button",
+        href: extra.url,
+        target: "_blank",
+        rel: "noopener",
+        textContent: `View ${label}`,
+      }))
+    })
+
+    if (data.previewUrl) buttons.appendChild(createElement("a", {
+      className,
+      role: "button",
+      href: data.previewUrl,
+      target: "_blank",
+      rel: "noopener",
+      textContent: "Preview all sizes",
+    }))
   } else {
-    if (data.editorUrl) {
-      const btn = document.createElement('a');
-      btn.className = 'preview-card-btn';
-      btn.href = data.editorUrl;
-      btn.target = '_blank';
-      btn.rel = 'noopener';
-      btn.textContent = 'Edit';
-      btns.appendChild(btn);
-    }
-    if (data.pdfUrl) {
-      const btn = document.createElement('a');
-      btn.className = 'preview-card-btn';
-      btn.href = data.pdfUrl;
-      btn.target = '_blank';
-      btn.rel = 'noopener';
-      btn.textContent = 'Download PDF';
-      btns.appendChild(btn);
-    }
-    if (data.jpgUrl) {
-      const btn = document.createElement('a');
-      btn.className = 'preview-card-btn';
-      btn.href = data.jpgUrl;
-      btn.target = '_blank';
-      btn.rel = 'noopener';
-      btn.textContent = 'Download JPG';
-      btns.appendChild(btn);
-    }
+    if (data.editorUrl) buttons.appendChild(createElement("a", {
+      className,
+      role: "button",
+      href: data.editorUrl,
+      target: "_blank",
+      rel: "noopener",
+      textContent: "Edit",
+    }))
+
+    if (data.pdfUrl) buttons.appendChild(createElement("a", {
+      className,
+      role: "button",
+      href: data.pdfUrl,
+      target: "_blank",
+      rel: "noopener",
+      textContent: "Download PDF",
+    }))
+
+    if (data.jpgUrl) buttons.appendChild(createElement("a", {
+      className,
+      role: "button",
+      href: data.jpgUrl,
+      target: "_blank",
+      rel: "noopener",
+      textContent: "Download JPG",
+    }))
+
     if (data.shareUrl) {
-      const btn = document.createElement('button');
-      btn.className = 'preview-card-btn preview-card-btn-ghost';
-      btn.textContent = 'Copy share link';
-      btn.addEventListener('click', () => {
+      const button = createElement("button", {
+        className: `${className} ${className}-ghost`,
+        role: "button",
+        textContent: "Copy share link",
+      })
+      button.addEventListener("click", () => {
         navigator.clipboard.writeText(data.shareUrl).then(() => {
-          btn.textContent = 'Link copied!';
-          setTimeout(() => { btn.textContent = 'Copy share link'; }, 2000);
-        });
-      });
-      btns.appendChild(btn);
+          button.textContent = "Link copied!"
+          setTimeout(() => { button.textContent = "Copy share link" }, 2000)
+        })
+      })
+      buttons.appendChild(button)
     }
   }
-
-  footer.appendChild(btns);
-  card.appendChild(footer);
-  messagesEl.appendChild(card);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+  messages.append(card, buttons)
+  messages.scrollTop = messages.scrollHeight
 }
 
 function renderBrandPicker(brands) {
-  const container = document.createElement('div');
-  container.className = 'brand-picker';
+  const section = createElement("section", { id: "brand-picker" })
+  const id = "brands"
 
-  const label = document.createElement('div');
-  label.className = 'brand-picker-label';
-  label.textContent = 'Select a Brand';
-  container.appendChild(label);
+  section.appendChild(createElement("label", {
+    className: "brand-picker-label",
+    htmlFor: id,
+    textContent: "Select a Brand",
+  }))
 
-  const chips = document.createElement('div');
-  chips.className = 'brand-picker-chips';
+  if (brands.length > maxBrandSelect) {
+    const div = createElement("div")
 
-  brands.forEach(name => {
-    const chip = document.createElement('div');
-    chip.className = 'format-chip';
-    chip.textContent = name;
-    chip.addEventListener('click', () => {
-      container.querySelectorAll('.format-chip').forEach(c => c.classList.add('disabled'));
-      chip.classList.add('selected');
-      sendMessageText(name);
-    });
-    chips.appendChild(chip);
-  });
+    const select = createElement("select", {
+      id,
+      required: true,
+      autofocus: true,
+      onfocus: "this.selectedIndex = -1",
+    })
 
-  container.appendChild(chips);
-  messagesEl.appendChild(container);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+    select.append(...brands.flatMap((textContent, i) => {
+      const options  = []
+      const previous = brands[i - 1]
+      if (previous && textContent.charAt(0) !== previous.charAt(0)) options.push(createElement("hr"))
+
+      return options.concat(createElement("option", { value: textContent, textContent }))
+    }))
+    div.appendChild(select)
+
+    const ok = createElement("button", {
+      className: "brand-picker-ok",
+      textContent: "OK",
+    })
+    ok.addEventListener("click", () => {
+      select.disabled = true
+      select.classList.add("selected")
+      ok.disabled = true
+      sendMessageText(select.value)
+    })
+    div.appendChild(ok)
+    section.appendChild(div)
+  } else {
+    const buttons = createElement("div", {id})
+    brands.forEach(textContent => {
+      const button = createElement("button", {
+        className: "format-chip",
+        textContent,
+      })
+      button.addEventListener("click", () => {
+        const buttons = section.querySelectorAll(".format-chip")
+        buttons.forEach(button => button.disabled = true)
+        button.classList.add("selected")
+        sendMessageText(textContent)
+      })
+      buttons.appendChild(button)
+    })
+    section.appendChild(buttons)
+  }
+  messages.appendChild(section)
+  messages.scrollTop = messages.scrollHeight
 }
 
 function renderTemplatePicker(templates, stream) {
-  const container = document.createElement('div');
-  container.className = 'template-picker';
-  let systemChooseBtn = null;
+  const section = createElement("section", { className: "template-picker" })
+  let systemChooseBtn = null
 
-  templates.forEach(t => {
-    const cell = document.createElement('div');
-    cell.className = 'template-cell';
+  const className = "template-cell"
+  const cells = []
 
-    if (t.thumbnail) {
-      const img = document.createElement('img');
-      img.src = t.thumbnail;
-      img.alt = t.name;
-      img.loading = 'lazy';
-      cell.appendChild(img);
-    } else {
-      const placeholder = document.createElement('div');
-      placeholder.className = 'template-cell-placeholder';
-      placeholder.textContent = 'No preview';
-      cell.appendChild(placeholder);
-    }
+  templates.forEach(template => {
+    const cell = createElement("figure", {className})
+    cells.push(cell)
 
-    const nameEl = document.createElement('div');
-    nameEl.className = 'template-cell-name';
-    nameEl.textContent = t.name;
-    cell.appendChild(nameEl);
+    if (template.thumbnail) cell.appendChild(createElement("img", {
+        src: template.thumbnail,
+        alt: template.name,
+        loading: "lazy",
+      }))
+    else cell.appendChild(createElement("img", {
+      className: `${className}-placeholder`,
+      src: "/static/icons/image-no.svg",
+      alt: "No preview",
+    }))
 
-    cell.addEventListener('click', () => {
-      container.querySelectorAll('.template-cell').forEach(c => c.classList.add('disabled'));
-      if (systemChooseBtn) { systemChooseBtn.disabled = true; systemChooseBtn.classList.add('used'); }
-      cell.classList.add('selected');
-      sendMessageText(t.name);
-    });
+    cell.appendChild(createElement("figcaption", {
+      className: `${className}-name`,
+      textContent: template.name,
+    }))
 
-    container.appendChild(cell);
-  });
+    cell.addEventListener("click", () => {
+      cells.forEach(element => console.log(element) ?? element.classList.add("disabled"))
+      if (systemChooseBtn) {
+        systemChooseBtn.disabled = true
+        systemChooseBtn.classList.add("used")
+      }
+      cell.classList.add("selected")
+      sendMessageText(template.name)
+    })
 
-  const wrapper = document.createElement('div');
-  wrapper.appendChild(container);
-  if (stream === 'digital') {
-    systemChooseBtn = document.createElement('button');
-    systemChooseBtn.className = 'system-choose-btn';
-    systemChooseBtn.textContent = 'Let the system choose a template';
-    systemChooseBtn.addEventListener('click', () => {
-      container.querySelectorAll('.template-cell').forEach(c => c.classList.add('disabled'));
-      systemChooseBtn.disabled = true;
-      systemChooseBtn.classList.add('used');
-      sendMessageText('Let the system choose a template');
-    });
-    wrapper.appendChild(systemChooseBtn);
+    section.appendChild(cell)
+  })
+
+  if (stream === "digital") {
+    const textContent = "Let the system choose a template"
+
+    systemChooseBtn = createElement("button", { className: "system-choose-btn", textContent })
+    systemChooseBtn.addEventListener("click", () => {
+      cells.forEach(element => element.classList.add("disabled"))
+      systemChooseBtn.disabled = true
+      systemChooseBtn.classList.add("used")
+      sendMessageText(textContent)
+    })
   }
-  messagesEl.appendChild(wrapper);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+  messages.append(section, systemChooseBtn)
+  messages.scrollTop = messages.scrollHeight
 }
 
 function renderQuickChips(chips) {
-  const row = document.createElement('div');
-  row.className = 'quick-chips';
-  chips.forEach(label => {
-    const btn = document.createElement('button');
-    btn.className = 'quick-chip';
-    btn.textContent = label;
-    btn.addEventListener('click', () => {
-      row.querySelectorAll('.quick-chip').forEach(c => {
-        c.classList.add('used');
-        c.disabled = true;
-      });
-      sendMessageText(label);
-    });
-    row.appendChild(btn);
-  });
-  messagesEl.appendChild(row);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+  const className = "quick-chip"
+  const div = createElement("div", { className: `${className}s` })
+
+  chips.forEach(textContent => {
+    const button = createElement("button", { className, textContent })
+    button.addEventListener("click", () => {
+      const buttons = div.querySelectorAll(`.${className}`)
+      buttons.forEach(element => {
+        element.classList.add("used")
+        element.disabled = true
+      })
+      sendMessageText(textContent)
+    })
+    div.appendChild(button)
+  })
+  messages.appendChild(div)
+  messages.scrollTop = messages.scrollHeight
 }
 
 ws.onopen = () => {
-  sendBtn.disabled = false;
-  appendMessage('Connected', 'system');
-};
+  submit.disabled = false
+  appendMessage("Connected", "connect")
+}
 
 ws.onclose = () => {
-  sendBtn.disabled = true;
-  appendMessage('Disconnected', 'system');
-};
+  submit.disabled = true
+  appendMessage("Disconnected", "disconnect")
+}
 
-ws.onerror = () => {
-  appendMessage('Connection error', 'system');
-};
+ws.onerror = () => appendMessage("Connection error", "error")
 
-ws.onmessage = (event) => {
-  const data = JSON.parse(event.data);
-  if (data.type === 'template_picker') {
-    renderTemplatePicker(data.templates, data.stream);
-  } else if (data.type === 'format_picker') {
-    renderFormatPicker(data);
-  } else if (data.type === 'brand_picker') {
-    renderBrandPicker(data.brands);
-  } else if (data.type === 'preview_card') {
-    renderPreviewCard(data);
-  } else if (data.type === 'progress') {
-    if (data.status === 'start') renderProgressCard(data.label || 'Working…');
-    else if (data.status === 'update') updateProgressCard(data.label || '');
-    else if (data.status === 'end') removeProgressCard();
-  } else {
-    sendBtn.disabled = false;
-    inputEl.disabled = false;
-    appendMessage(data.text, data.type === 'error' ? 'error' : 'received');
-    if (data.chips && data.chips.length) renderQuickChips(data.chips);
+ws.onmessage = event => {
+  const data = JSON.parse(event.data)
+
+  switch (data.type) {
+    case "template_picker": renderTemplatePicker(data.templates, data.stream)
+      break
+    case "format_picker": renderFormatPicker(data)
+      break
+    case "brand_picker": renderBrandPicker(data.brands)
+      break
+    case "preview_card": renderPreviewCard(data)
+      break
+    case "progress":
+      switch (data.status) {
+        case "start": renderProgressCard(data.label || "Working…")
+          break
+        case "update": updateProgressCard(data.label || "")
+          break
+        case "end": removeProgressCard()
+      }
+      break
+    default:
+      submit.disabled = false
+      input.disabled  = false
+      input.focus()
+
+      appendMessage(data.text, data.type === "error" ? "error" : "received")
+      if (data.chips?.length > 0) renderQuickChips(data.chips)
   }
-};
+}
 
 function sendMessageText(text) {
-  appendMessage(text, 'sent');
-  sendBtn.disabled = true;
-  inputEl.disabled = true;
-  ws.send(JSON.stringify({ type: 'message', text }));
+  ws.send(JSON.stringify({ type: "message", text }))
+  appendMessage(text, "sent")
+  input.disabled  = true
+  submit.disabled = true
 }
 
 function sendMessage() {
-  const text = inputEl.value.trim();
-  if (!text || ws.readyState !== WebSocket.OPEN) return;
-  sendMessageText(text);
-  inputEl.value = '';
+  const text = input.value.trim()
+  if (!text || ws.readyState !== WebSocket.OPEN) return
+
+  sendMessageText(text)
+  input.value = ""
 }
 
-sendBtn.onclick = sendMessage;
-inputEl.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
+submit.onclick = sendMessage
+input.addEventListener("keydown", e => { if (e.key === "Enter") sendMessage() })
