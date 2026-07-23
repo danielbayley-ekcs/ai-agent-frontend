@@ -1,7 +1,6 @@
 .message {
   max-width: 66%;
-  padding-inline: var(--spacing);
-  padding-block:  var(--spacing-half);
+  white-space: pre-wrap;
 
   border-radius: var(--corner-round);
   --corner-from: 2px;
@@ -20,8 +19,8 @@
     border-bottom-right-radius: var(--corner-from);
   }
 
-  &.connect::before    { content: var(--icon-connection) " " }
-  &.disconnect::before { content: var(--icon-disconnect) " " }
+  &.connect::before    { content: var(--icon-connection) }
+  &.disconnect::before { content: var(--icon-disconnect) }
   &.error {
     text-transform: revert;
     color: var(--color-error);
@@ -30,12 +29,12 @@
     border-color: var(--color-error);
     padding-block: var(--spacing);
     padding-top: 0.5rem;
-    &::before { content: var(--icon-error) "  " }
+    &::before { content: var(--icon-error) }
   }
 }
 
 /* System message */
-h4 {
+h5 {
   align-self: center;
   padding-block: 0;
   color: var(--color-border);
