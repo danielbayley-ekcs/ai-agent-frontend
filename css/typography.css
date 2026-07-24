@@ -23,24 +23,17 @@ h1 {
   font-weight: 500;
 }
 
-h5, figcaption { font-size: 0.75rem }
-h5 {
+h5, label:not([class*=progress]) {
+  font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
 }
 
 .message {
   white-space: pre-wrap;
-  &:is(h1, h2, h3, h4), br ~ * {
-    font-size: 1rem;
-  }
+  &:is(h1, h2, h3, h4), br ~ * { font-size: 1rem }
 }
 
-label {
-  cursor: text;
-  &:not(.progress-label) {
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-  }
-}
+label, figcaption { cursor: text }
+label:not([class*=progress]) { font-weight: 700 }
+figcaption { font-style: italic }
