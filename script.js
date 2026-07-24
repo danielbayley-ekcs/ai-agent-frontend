@@ -2,6 +2,33 @@ import snarkdown from "https://esm.sh/snarkdown@2.0.0"
 
 const maxBrandSelect = 16
 
+// https://lucide.dev/icons
+const color = "currentcolor"
+const symbol = "%"
+const svg = `
+  <svg xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    width="24"
+    height="24"
+    fill="none"
+    stroke="${color}"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    class="lucide lucide-copy-icon lucide-copy"
+    role="img">
+    ${symbol}
+  </svg>`
+
+const copy = `
+  <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+`
+
+const icons = {
+  copy: svg.replace(symbol, copy)
+}
+
 const sessionId = typeof crypto.randomUUID === "function"
   ? crypto.randomUUID()
   : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, char => {
@@ -170,7 +197,8 @@ function renderProgressCard(textContent) {
 }
 
 function updateProgressCard(label) {
-  if (_progressCard) _progressCard.querySelector(".progress-label").textContent = label
+  const __progressCard = _progressCard.querySelector(".progress-label")
+  if (_progressCard) __progressCard.textContent = label
 }
 
 function removeProgressCard() {
@@ -205,10 +233,20 @@ function renderPreviewCard(data) {
     //style,
   }))
 
-  if (data.projectId) wrapper.appendChild(createElement("figcaption", {
-    className: "preview-card-footer",
-    textContent: `Project: ${data.projectId}`,
-  }))
+  if (data.projectId) {
+    const caption = createElement("figcaption", {
+      className: "preview-card-footer",
+      textContent: `Project: ${data.projectId}`,
+    })
+    const button = createElement("button", {
+      className: "copy",
+      innerHTML: icons.copy,
+    })
+    button.addEventListener("click", () => null)
+
+    caption.appendChild(button)
+    wrapper.appendChild(caption)
+  }
 
   const className = "preview-card-btn"
   const buttons = createElement("div", { className: `${className}s` })
@@ -308,7 +346,6 @@ function renderBrandPicker(brands) {
 
   if (brands.length > maxBrandSelect) {
     const div = createElement("div")
-
     const select = createElement("select", {
       id,
       required: true,
@@ -369,24 +406,27 @@ function renderTemplatePicker(templates, stream) {
     const cell = createElement("figure", {className})
     cells.push(cell)
 
-    if (template.thumbnail) cell.appendChild(createElement("img", {
-        src: template.thumbnail,
-        alt: template.name,
-        loading: "lazy",
-      }))
-    else cell.appendChild(createElement("img", {
-      className: `${className}-placeholder`,
-      src: "/static/icons/image-no.svg",
-      alt: "No preview",
-    }))
+    const img = createElement("img", {
+      src: template.thumbnail || "/static/icons/image-no.svg",
+      alt: template.name || "No preview",
+    })
+    if (!template.thumbnail) img.classList.add(`${className}-placeholder`)
+    cell.appendChild(img)
 
-    cell.appendChild(createElement("figcaption", {
+    const caption = createElement("figcaption", {
       className: `${className}-name`,
       textContent: template.name,
-    }))
+    })
+    const button = createElement("button", {
+      className: "copy",
+      innerHTML: icons.copy,
+    })
+    button.addEventListener("click", () => null)
+    caption.appendChild(button)
 
-    cell.addEventListener("click", () => {
-      cells.forEach(element => console.log(element) ?? element.classList.add("disabled"))
+    cell.appendChild(caption)
+    img.addEventListener("click", () => {
+      cells.forEach(element => element.classList.add("disabled"))
       if (systemChooseBtn) {
         systemChooseBtn.disabled = true
         systemChooseBtn.classList.add("used")
