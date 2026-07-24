@@ -19,6 +19,7 @@
     border-bottom-right-radius: var(--corner-from);
   }
 
+  &[class]::before     { margin-inline-end: 0.5ch }
   &.connect::before    { content: var(--icon-connection) }
   &.disconnect::before { content: var(--icon-disconnect) }
   &.error {

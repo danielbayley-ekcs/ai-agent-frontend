@@ -1,20 +1,9 @@
 .preview-card {
   align-self: flex-start;
-  flex-shrink: 0;
   background-color: var(--color-grey-light);
 }
 
-.preview-card-iframe-wrapper {
-  margin: 0 auto;
-  overflow: hidden;
-}
-
-.preview-card-id_ {
-  font-family: monospace;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+.preview-card-iframe-wrapper iframe { margin: 0 auto }
 
 .preview-card-btns {
   display: flex;

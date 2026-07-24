@@ -1,4 +1,4 @@
-body, header, nav, main, footer { display: flex }
+body, nav, main, footer { display: flex }
 body, main { flex-direction: column }
 
 body {
@@ -6,13 +6,12 @@ body {
   background-color: var(--color-bg);
 }
 
-header, main, footer {
+main, footer {
   padding: var(--spacing);
   overflow-x: clip;
 }
 
 header {
-  justify-content: space-between;
   color: white;
   background-color: var(--color-primary);
   border-bottom: 0.25rem solid var(--color-bg);
@@ -28,12 +27,13 @@ main {
 main { gap: var(--spacing) }
 nav, footer { gap: var(--spacing-half) }
 
-button, [role=button], .message, figcaption {
+header, button, [role=button], .message, figcaption {
   text-box: trim-both ex alphabetic;
   padding-inline: var(--spacing);
   padding-block: 2ex;
-  &:not(footer &) { padding-top: 2.5ex }
+  &:not(header, footer &) { padding-top: 2.5ex }
 }
+header { padding-block: 3ex }
 
 footer {
   background-color: white;

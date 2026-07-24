@@ -23,7 +23,7 @@ button, [role=button] {
 a[role=button] {
   display: block;
   text-decoration: none;
-  &::before { content: var(--icon-external-link) }
+  &::before { content: var(--icon-link-external) }
 }
 
 footer button { padding-block: 1ex }

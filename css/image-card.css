@@ -18,6 +18,7 @@ figure {
 
   figcaption {
     text-align: center;
+    text-overflow: ellipsis;
     background-color: white;
     &::after { content: var(--icon-copy) }
   }
