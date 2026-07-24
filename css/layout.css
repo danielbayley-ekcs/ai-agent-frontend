@@ -27,7 +27,7 @@ main {
 main { gap: var(--spacing) }
 nav, footer { gap: var(--spacing-half) }
 
-header, button, [role=button], .message, figcaption {
+header, button, [role=button], .message {
   text-box: trim-both ex alphabetic;
   padding-inline: var(--spacing);
   padding-block: 2ex;
