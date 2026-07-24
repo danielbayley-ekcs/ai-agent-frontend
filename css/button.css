@@ -1,3 +1,4 @@
+/*:not(figcaption) { TODO */
 button, [role=button] {
   width: fit-content;
   text-wrap: nowrap;
