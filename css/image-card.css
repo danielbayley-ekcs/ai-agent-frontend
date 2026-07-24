@@ -17,9 +17,25 @@ figure {
   }
 
   figcaption {
+    display: flex;
+    align-items: baseline;
+    width: 100%;
+
+    gap: 1ch;
+    padding-inline: var(--spacing);
+    padding-block: 1ex;
+
     text-align: center;
+    text-box: trim-both ex alphabetic;
     text-overflow: ellipsis;
+
     background-color: white;
-    &::after { content: var(--icon-copy) }
+    cursor: text;
+
+    button {
+      padding-block: 1ex;
+      color: currentcolor;
+      background: none;
+    }
   }
 }
