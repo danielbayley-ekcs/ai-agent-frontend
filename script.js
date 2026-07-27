@@ -479,6 +479,7 @@ ws.onopen = () => {
 }
 
 ws.onclose = () => {
+  input.disabled  = true
   submit.disabled = true
   appendMessage("Disconnected", "disconnect")
 }
