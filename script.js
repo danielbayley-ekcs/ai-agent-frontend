@@ -149,16 +149,16 @@ function renderFormatPicker(data) {
     return div
   }
 
-  const sizeSection  = makeSection("size",  data.size_label || "Page Size", data.sizes, isDigital) //:",
+  const sizeSection  = makeSection("size",  data.size_label || "Page Size", data.sizes, isDigital)
   const styleSection = makeSection("style", "Style", data.styles)
   const themeSection = makeSection("theme", "Theme", data.themes)
 
   // Sections in a horizontal row so all are visible at once
-  const sectionsRow = createElement("section", { className: "format-picker-columns" })
-  if (sizeSection)  sectionsRow.appendChild(sizeSection)
-  if (styleSection) sectionsRow.appendChild(styleSection)
-  if (themeSection) sectionsRow.appendChild(themeSection)
-  section.appendChild(sectionsRow)
+  const div = createElement("div", { className: "format-picker-columns" })
+  if (sizeSection)  div.appendChild(sizeSection)
+  if (styleSection) div.appendChild(styleSection)
+  if (themeSection) div.appendChild(themeSection)
+  section.appendChild(div)
 
   ok.addEventListener("click", () => {
     const chips = section.querySelectorAll(".format-chip")
