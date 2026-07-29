@@ -22,7 +22,7 @@
   --icon-disconnect:    var(--icon-unplug);
   --icon-error:         var(--icon-circle-x);
   --icon-thinking:      var(--icon-brain);
-  --icon-random:        var(--icon-dice-5);
+  --icon-random:        var(--icon-layout-template);
   --icon-edit:          var(--icon-square-pen);
   --icon-preview:       var(--icon-eye);
   --icon-templates:     var(--icon-layout-template);
@@ -30,8 +30,8 @@
 }
 
 svg[class*=icon] {
-  display: inline-flex;
-  align-self: center;
-  height: 1cap;
+  display: inline;
+  vertical-align: text-bottom;
+  height: 2ex;
   aspect-ratio: 1 / 1;
 }
