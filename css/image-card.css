@@ -5,8 +5,9 @@ figure {
   transition: border-color var(--time-quarter);
   cursor: pointer;
 
-  &:not(.disabled, [class*=preview]):hover { border-color: var(--color-primary) }
+  &:not([aria-disabled=true], [aria-selected=true], [class*=preview]):hover { border-color: var(--color-primary) }
 
+  iframe { margin: 0 auto }
   img {
     width: 100%;
     height: 8rem;
@@ -19,21 +20,22 @@ figure {
   figcaption {
     display: flex;
     align-items: baseline;
-    width: 100%;
-
+    justify-content: center;
     gap: 1ch;
     padding-inline: var(--spacing);
-    padding-block: 1ex;
 
-    text-align: center;
-    text-box: trim-both ex alphabetic;
-    text-overflow: ellipsis;
+    code {
+      padding-inline: 0;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
 
     background-color: white;
     cursor: text;
 
     button {
-      padding-block: 1ex;
+      padding: 0;
       color: currentcolor;
       background: none;
     }
