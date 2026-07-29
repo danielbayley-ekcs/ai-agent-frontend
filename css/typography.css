@@ -34,6 +34,6 @@ h5, label:not([class*=progress]) {
   &:is(h1, h2, h3, h4), br ~ * { font-size: 1rem }
 }
 
-label, figcaption { cursor: text }
+label, figcaption code { cursor: text }
+figcaption code { font-style: italic }
 label:not([class*=progress]) { font-weight: 700 }
-figcaption { font-style: italic }
