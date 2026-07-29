@@ -7,5 +7,5 @@
 
 .preview-card-btns {
   display: flex;
-  gap: var(--spacing);
+  gap: var(--spacing-half);
 }
