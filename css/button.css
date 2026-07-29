@@ -1,4 +1,3 @@
-/*:not(figcaption) { TODO */
 button, [role=button] {
   width: fit-content;
   text-wrap: nowrap;
@@ -19,6 +18,20 @@ button, [role=button] {
     top: 0.5cap;
     margin-inline-end: 1ch;
   }
+
+  &:has(svg[class*="icon"]) {
+    padding: 0;
+    border-color: transparent;
+
+    &:focus-visible { outline: none }
+
+    figcaption & path[pathLength] {
+      stroke-dasharray: 100;
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset var(--time-half) var(--ease);
+      @starting-style { stroke-dashoffset: 100 }
+    }
+	}
 }
 
 a[role=button] {
@@ -29,13 +42,15 @@ a[role=button] {
 
 footer button { padding-block: 1ex }
 
-*:disabled, .disabled {
+*:disabled, [aria-disabled=true] {
   pointer-events: none;
   cursor: text;
-  &:not(.selected) { opacity: 50% }
+  &:not([aria-pressed=true], [aria-selected=true]) { opacity: 50% }
 }
 
-.system-choose-btn::before { content: var(--icon-random) }
+.system-choose-btn::before {
+  content: var(--icon-random);
+}
 
 .quick-chips {
   display: flex;
@@ -44,9 +59,11 @@ footer button { padding-block: 1ex }
   gap: var(--spacing-half);
 }
 
-[class*=picker] [class*=chip] { border-radius: 50vh }
+[class*=picker] [class*=chip] {
+  border-radius: 50vh;
+}
 
-.selected {
+[aria-pressed=true] {
   color: revert;
   background-color: white;
   border: var(--border);
