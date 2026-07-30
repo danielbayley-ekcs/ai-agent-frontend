@@ -70,6 +70,7 @@ const submit     = document.querySelector("footer button")
 function createElement(tagName, attributes = {}, options) {
   const element = document.createElement(tagName, options)
   if (attributes.textContent) attributes["data-content"] ??= attributes.textContent
+
   for (const name in attributes)
     if (element.setAttribute && element[name] in element)
       element.setAttribute(name, attributes[name])
@@ -151,7 +152,7 @@ function renderFormatPicker(data) {
     textContent: "OK",
   })
 
-  function makeSection(key, label, options, multiSelect = false) {
+  function makeSection(key, textContent, options, multiSelect = false) {
     if (!options?.length) return null
 
     const div = createElement("div", {
@@ -159,9 +160,10 @@ function renderFormatPicker(data) {
       role: "group",
     })
 
+    if (multiSelect) textContent += "(s)"
     div.appendChild(createElement("label", {
       className: `${className}-label`,
-      textContent: label + (multiSelect ? " (select one or more)" : ""),
+      textContent,
     }))
 
     const chips = createElement("div", {
@@ -255,10 +257,10 @@ function updateProgressCard(label) {
 }
 
 function removeProgressCard() {
-  if (_progressCard) {
-    _progressCard.remove()
-    _progressCard = null
-  }
+  if (!_progressCard) return
+
+  _progressCard.remove()
+  _progressCard = null
 }
 
 function renderPreviewCard(data) {
