@@ -3,8 +3,6 @@
   background-color: var(--color-grey-light);
 }
 
-.preview-card-iframe-wrapper iframe { margin: 0 auto }
-
 .preview-card-btns {
   display: flex;
   gap: var(--spacing-half);
