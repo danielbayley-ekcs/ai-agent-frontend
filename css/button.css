@@ -2,7 +2,7 @@ button, [role=button] {
   width: fit-content;
   text-wrap: nowrap;
 
-  &:not(footer &) { padding-top: 2.5ex }
+  &:not([class*=chip], footer &) { padding-top: 2.5ex }
 
   color: white;
   background-color: var(--color-primary);
