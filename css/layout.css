@@ -31,7 +31,11 @@ header, button, [role=button], .message, figcaption code {
   text-box: trim-both ex alphabetic;
   padding-inline: var(--spacing);
   padding-block: 2ex;
-  &:not(header, footer &) { padding-top: 2.5ex }
+  &.format-chip {
+    padding-block: 1.5ex;
+    padding-top:  1.75ex;
+  }
+  &:not(header, .format-chip, footer &) { padding-top: 2.5ex }
 }
 header { padding-block: 3ex }
 
