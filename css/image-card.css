@@ -5,7 +5,9 @@ figure {
   transition: border-color var(--time-quarter);
   cursor: pointer;
 
-  &:not([aria-disabled=true], [aria-selected=true], [class*=preview]):hover { border-color: var(--color-primary) }
+  &:not([aria-disabled=true], [aria-selected=true], [class*=preview] &):hover {
+    border-color: var(--color-primary);
+  }
 
   iframe { margin: 0 auto }
   img {
@@ -21,7 +23,7 @@ figure {
     display: flex;
     align-items: baseline;
     justify-content: center;
-    gap: 1ch;
+    gap: 0.5ch;
     padding-inline: var(--spacing);
 
     code {
