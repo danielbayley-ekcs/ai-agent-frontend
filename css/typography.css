@@ -9,11 +9,11 @@ body {
   font-family: Montserrat, sans-serif;
   line-height: 1.5;
 
-  &, p, label { text-wrap: pretty }
+  &, p { text-wrap: pretty }
   -webkit-font-smoothing: antialiased;
 }
 
-:is(h1, h2, h3, h4, h5, h6), p, label {
+:is(h1, h2, h3, h4, h5, h6), p {
   overflow-wrap: break-word;
   text-wrap: balance;
 }
@@ -27,6 +27,7 @@ h5, label:not([class*=progress]) {
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
+  text-wrap: nowrap;
 }
 
 .message {
