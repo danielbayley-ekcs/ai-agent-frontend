@@ -479,6 +479,7 @@ function renderTemplatePicker(templates, stream) {
 
     const caption = createElement("figcaption", { className: `${className}-name` })
     const file    = createElement("code", { textContent: template.name })
+    const toolbar = createElement("div", { className: "toolbar", role: "group" })
     const buttons = []
     buttons.push(createToggleButton({
       className: "copy",
@@ -490,7 +491,8 @@ function renderTemplatePicker(templates, stream) {
       title: "Preview template",
     }, icons.preview, console.log))
 
-    caption.append(file, ...buttons)
+    toolbar.append(...buttons)
+    caption.append(file, toolbar)
 
     cell.appendChild(caption)
     img.addEventListener("click", () => {

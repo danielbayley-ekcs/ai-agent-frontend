@@ -22,9 +22,10 @@ figure {
   figcaption {
     display: flex;
     align-items: baseline;
-    justify-content: center;
+    justify-content: space-between;
     gap: 0.5ch;
     padding-inline: var(--spacing);
+    padding-right:  var(--spacing-half);
 
     code {
       padding-inline: 0;
@@ -42,4 +43,6 @@ figure {
       background: none;
     }
   }
+
+  .toolbar { white-space: nowrap }
 }
