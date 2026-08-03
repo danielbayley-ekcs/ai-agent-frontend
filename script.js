@@ -45,12 +45,18 @@ const shared = `
   <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
   <path d="m9 15 2 2 4-4"/>
 `
+// https://lucide.dev/icons/eye
+const eye = `
+  <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/>
+  <circle cx="12" cy="12" r="3"/>
+`
 
 const icons = {
-  copy:   svg.replace(symbol, copy),
-  copied: svg.replace(symbol, copied),
-  share:  svg.replace(symbol, share),
-  shared: svg.replace(symbol, shared),
+  copy:    svg.replace(symbol, copy),
+  copied:  svg.replace(symbol, copied),
+  share:   svg.replace(symbol, share),
+  shared:  svg.replace(symbol, shared),
+  preview: svg.replace(symbol, eye),
 }
 
 const sessionId = typeof crypto.randomUUID === "function"
@@ -80,6 +86,29 @@ function createElement(tagName, attributes = {}, options) {
   return element
 }
 
+function createToggleButton(options, icon, onClick, timeout) {
+  const button = createElement("button", options)
+  button.ariaPressed ??= false
+
+  let pressed
+  if (icon) {
+    [icon, pressed] = [icon].flat()
+    button.innerHTML = icon
+  }
+
+  button.addEventListener("click", event => {
+    event.target.ariaPressed = event.target.ariaPressed !== "true"
+    onClick?.call?.(null, event)
+    if (!pressed) return
+
+    if (timeout)
+      setTimeout(() => event.target.innerHTML = icon, timeout)
+    else
+      event.target.innerHTML = pressed
+  })
+  return button
+}
+
 const createLink = (className, href, textContent) =>
   createElement("a", {
     className,
@@ -101,6 +130,9 @@ const enable = (...elements) =>
     element.disabled = false
     element.ariaDisabled = false
   })
+
+const clipboardCopy = content =>
+  content && navigator.clipboard.writeText(content)
 
 function renderMarkdown(text) {
   // Escape HTML to prevent injection
@@ -152,7 +184,7 @@ function renderFormatPicker(data) {
     textContent: "OK",
   })
 
-  function makeSection(key, textContent, options, multiSelect = false) {
+  function makeSection(key, textContent, options, multiSelect) {
     if (!options?.length) return null
 
     const div = createElement("div", {
@@ -170,22 +202,17 @@ function renderFormatPicker(data) {
       className: `${className}-chips`,
       role: "group",
     })
-    options.forEach(textContent => {
+    const buttons = options.map(textContent => {
       const className = "format-chip"
-      const chip = createElement("button", {
-        className,
-        textContent,
-      })
-      chip.addEventListener("click", () => {
+      const button = createToggleButton({ className, textContent }, null, ({ target }) => {
         if (multiSelect) {
-          chip.ariaPressed = !chip.ariaPressed
-          if (chip.ariaPressed)
+          if (target.ariaPressed && !selections[key].includes(textContent))
             selections[key].push(textContent)
           else
             selections[key] = selections[key].filter(out => out !== textContent)
         } else {
-          chips.querySelectorAll(`.${className}`).forEach(element => element.ariaPressed = false)
-          chip.ariaPressed = true
+          buttons.forEach(button => button.ariaPressed = false)
+          target.ariaPressed = true
           selections[key] = textContent
         }
         const sizeOk  = !hasSizes  || (isDigital ? selections.size.length > 0 : !!selections.size)
@@ -195,7 +222,8 @@ function renderFormatPicker(data) {
         if (sizeOk && styleOk && themeOk) enable(ok)
         else disable(ok)
       })
-      chips.appendChild(chip)
+      chips.appendChild(button)
+      return button
     })
     div.appendChild(chips)
     return div
@@ -304,7 +332,7 @@ function renderPreviewCard(data) {
       innerHTML: icons.copy,
     })
     button.addEventListener("click", async () => {
-      await navigator.clipboard.writeText(data.projectId)
+      await clipboardCopy(data.projectId)
 
       button.innerHTML = icons.copied
       button.ariaPressed = true
@@ -415,8 +443,8 @@ function renderBrandPicker(brands) {
         textContent,
       })
       button.addEventListener("click", () => {
-        section.querySelectorAll(`.${className}`).forEach(button => disable(button))
-        button.ariaPressed = !button.ariaPressed
+        const chips = section.querySelectorAll(`.${className}`)
+        chips.forEach(button => disable(button))
         sendMessageText(textContent)
       })
       buttons.appendChild(button)
@@ -451,23 +479,18 @@ function renderTemplatePicker(templates, stream) {
 
     const caption = createElement("figcaption", { className: `${className}-name` })
     const file    = createElement("code", { textContent: template.name })
-    const button  = createElement("button", {
+    const buttons = []
+    buttons.push(createToggleButton({
       className: "copy",
       title: "Copy template name",
-      innerHTML: icons.copy,
-    })
-    button.addEventListener("click", async () => {
-      if (!template.name) return
+    }, [icons.copy, icons.copied], () => clipboardCopy(template.name), ms))
 
-      await navigator.clipboard.writeText(template.name)
-      button.innerHTML = icons.copied
-      button.ariaPressed = true
-      setTimeout(() => {
-        button.innerHTML = icons.copy
-        button.ariaPressed = false
-      }, ms)
-    })
-    caption.append(file, button)
+    buttons.push(createToggleButton({
+      className: "preview",
+      title: "Preview template",
+    }, icons.preview, console.log))
+
+    caption.append(file, ...buttons)
 
     cell.appendChild(caption)
     img.addEventListener("click", () => {
