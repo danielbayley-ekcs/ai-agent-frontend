@@ -32,6 +32,16 @@ button, [role=button] {
       @starting-style { stroke-dashoffset: 100 }
     }
 	}
+
+	&[aria-pressed=false] {
+    color: revert;
+    background-color: white;
+    border: var(--border);
+  }
+  &[aria-pressed=true] {
+    background-color: var(--color-primary);
+    border-color: transparent;
+  }
 }
 
 a[role=button] {
@@ -45,7 +55,7 @@ footer button { padding-block: 1ex }
 *:disabled, [aria-disabled=true] {
   pointer-events: none;
   cursor: text;
-  &:not([aria-pressed=true], [aria-selected=true]) { opacity: 50% }
+  &:not([aria-selected=true]) { opacity: 50% }
 }
 
 .system-choose-btn::before {
@@ -59,13 +69,4 @@ footer button { padding-block: 1ex }
   gap: var(--spacing-half);
 }
 
-[class*=picker] [class*=chip] {
-  border-radius: 50vh;
-}
-
-[aria-pressed=true] {
-  color: revert;
-  background-color: white;
-  border: var(--border);
-  border-color: var(--color-primary);
-}
+[class*=picker] [class*=chip] { border-radius: 50vh }
