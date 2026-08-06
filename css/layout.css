@@ -1,4 +1,4 @@
-body, nav, main, footer { display: flex }
+body, nav, menu, main, footer { display: flex }
 body, main { flex-direction: column }
 
 body {
@@ -25,7 +25,7 @@ main {
 }
 
 main { gap: var(--spacing) }
-nav, footer { gap: var(--spacing-half) }
+nav, menu, footer { gap: var(--spacing-half) }
 
 header, button, [role=button], .message, figcaption code {
   text-box: trim-both ex alphabetic;
