@@ -44,5 +44,5 @@ figure {
     }
   }
 
-  .toolbar { white-space: nowrap }
+  [role=toolbar] { white-space: nowrap }
 }
