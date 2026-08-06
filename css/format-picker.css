@@ -1,6 +1,5 @@
 .format-picker,
 .format-picker-columns,
-.format-picker-section,
 .format-picker-chips { display: flex }
 
 .format-picker-section,
@@ -16,7 +15,7 @@
   border-radius: var(--corner-round);
 }
 
-.format-picker-section { gap: var(--spacing) }
+.format-picker-columns { gap: var(--spacing) }
 
 .format-picker-chips {
   flex-wrap: wrap;
