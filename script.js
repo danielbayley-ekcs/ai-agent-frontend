@@ -273,6 +273,50 @@ function renderFormatPicker(data) {
 }
 
 
+function renderSizePicker(sizes) {
+  const className = "format-picker"
+  const article = createArticle({ className })
+  const selected = new Set()
+
+  article.appendChild(createLabel({
+    className: `${className}-label`,
+    textContent: "Select one or more sizes",
+  }))
+
+  const chips = createDiv({ className: `${className}-chips` })
+  const ok = createButton({
+    type: "submit",
+    className: `${className}-ok`,
+    textContent: "OK",
+  })
+  disable(ok)
+
+  sizes.forEach(textContent => {
+    const button = createToggleButton({ className: "format-chip", textContent }, null, ({ target }) => {
+      // Explicit "true" check (not a truthiness check on the string) — ariaPressed is always
+      // a non-empty DOMString ("true" or "false"), so a truthy check would never see it as
+      // unselected. See renderFormatPicker's multi-select branch for the pattern this avoids.
+      if (target.ariaPressed === "true") selected.add(textContent)
+      else selected.delete(textContent)
+      if (selected.size > 0) enable(ok)
+      else disable(ok)
+    })
+    chips.appendChild(button)
+  })
+
+  ok.addEventListener("click", () => {
+    const buttons = article.querySelectorAll(".format-chip")
+    buttons.forEach(button => disable(button))
+    disable(ok)
+    sendMessageText([...selected].join(" + "))
+  })
+
+  article.append(chips, ok)
+  messages.appendChild(article)
+  autoScroll()
+}
+
+
 let _progressCard = null
 
 function renderProgressCard(textContent) {
@@ -589,6 +633,8 @@ ws.onmessage = event => {
     case "template_picker": renderTemplatePicker(data.templates, data.stream)
       break
     case "format_picker": renderFormatPicker(data)
+      break
+    case "size_picker": renderSizePicker(data.sizes)
       break
     case "brand_picker": renderBrandPicker(data.brands)
       break
