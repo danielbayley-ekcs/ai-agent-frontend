@@ -12,7 +12,7 @@ https://joshwcomeau.com/css/custom-css-reset#one-box-sizing-model-2
 body { height: 100vh }
 
 /* https://joshwcomeau.com/css/custom-css-reset#six-improve-media-defaults-7 */
-img, picture, video, canvas, iframe, object, svg:not([class*=icon]) {
+img, picture, video, canvas, iframe, object, svg {
   display: block;
   max-width: 100%;
 }
@@ -21,3 +21,5 @@ iframe { border: none }
 
 /* https://joshwcomeau.com/css/custom-css-reset#seven-inherit-fonts-for-form-controls-8 */
 input, textarea, button, select { font: inherit }
+
+:where(button, a) > * { pointer-events: none }
