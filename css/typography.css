@@ -33,6 +33,7 @@ h5, label:not([class*=progress]) {
 .message {
   white-space: pre-wrap;
   &:is(h1, h2, h3, h4), br ~ * { font-size: 1rem }
+  &:has(pre > code) { overflow-x: clip }
 }
 
 label, figcaption code { cursor: text }
