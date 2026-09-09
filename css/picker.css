@@ -1,0 +1,28 @@
+[class$=-picker]:not([class|=template]),
+[class$=-picker-columns]:not([class|=template]),
+[class$=-picker-column]:not([class|=template]),
+[class$=-picker-chips]:not([class|=template]) { display: flex }
+
+[class$=-picker-column]:not([class|=template]) { gap: var(--spacing) }
+
+[class$=-picker-section]:not([class|=template]),
+[class$=-picker-column]:not([class|=template]),
+[class$=-picker]:not([class|=template]) {
+  flex-direction: column;
+  &, [class$=-picker-columns]:not([class|=template]) { gap: var(--spacing) }
+}
+
+[class$=-picker]:not([class|=template]) {
+  padding: var(--spacing);
+  background-color: white;
+  border: var(--border);
+  border-radius: var(--corner-round);
+}
+
+[class$=-picker-chips]:not([class|=template]) {
+  flex-wrap: wrap;
+  gap: var(--spacing-half);
+  &:has(button[class*=chip]:nth-child(16)) button[class*=chip] { font-size: small }
+}
+
+[class$=-picker-ok]:not([class|=template]) { align-self: end }
