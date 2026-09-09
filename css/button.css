@@ -55,8 +55,8 @@ a[role=button] {
 }
 
 footer button[type=submit] {
-  padding-inline: 1ch;
-  padding-block:  1ex;
+  padding-inline: var(--spacing);
+  padding-block:  var(--spacing-half);
 }
 
 *:disabled, [aria-disabled=true] {
