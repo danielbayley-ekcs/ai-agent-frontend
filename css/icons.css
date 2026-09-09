@@ -29,9 +29,19 @@
   --icon-link-external: var(--icon-square-arrow-out-up-right);
 }
 
-svg[class*=icon] {
-  display: inline;
-  vertical-align: text-bottom;
-  height: 2ex;
+svg[class|=icon] {
   aspect-ratio: 1 / 1;
+  width: auto;
+  height: 2ex;
+  &:not(:only-child, menu[role=toolbar] &) {
+    display: inline-block;
+    vertical-align: text-bottom;
+    height: calc(1cap + 2px);
+  }
+
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+  stroke-linecap:  round;
+  stroke-linejoin: round;
 }
