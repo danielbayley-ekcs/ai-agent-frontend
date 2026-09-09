@@ -2,7 +2,7 @@ button, [role=button] {
   width: fit-content;
   text-wrap: nowrap;
 
-  &:not([class*=chip], footer &, :has(svg.icon:only-child)) { padding-top: 2.5ex }
+  &:not([class*=chip], footer &, :has(svg[class|=icon]:only-child)) { padding-top: 2.5ex }
 
   color: white;
   background-color: var(--color-primary);
@@ -19,18 +19,13 @@ button, [role=button] {
     margin-inline-end: 1ch;
   }
 
-  &:has(svg.icon:only-child) {
+  &:has(svg[class|=icon]:only-child) {
     menu[role=toolbar] & {
       height: fit-content;
       padding: 0;
     }
 
-    svg.icon {
-      --icon-size: 1em;
-      display: block;
-      width: var(--icon-size);
-      aspect-ratio: 1 / 1;
-    }
+    svg[class|=icon] { display: block }
 
     border-color: transparent;
 
@@ -70,9 +65,7 @@ footer button[type=submit] {
   &:not([aria-selected=true]) { opacity: 50% }
 }
 
-.system-choose-btn::before {
-  content: var(--icon-random);
-}
+.system-choose-btn::before { content: var(--icon-random) }
 
 .quick-chips {
   display: flex;
