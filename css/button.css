@@ -2,7 +2,7 @@ button, [role=button] {
   width: fit-content;
   text-wrap: nowrap;
 
-  &:not([class*=chip], footer &) { padding-top: 2.5ex }
+  &:not([class*=chip], footer &, :has(svg.icon:only-child)) { padding-top: 2.5ex }
 
   color: white;
   background-color: var(--color-primary);
@@ -19,11 +19,20 @@ button, [role=button] {
     margin-inline-end: 1ch;
   }
 
-  &:has(svg[class*="icon"]) {
-    padding: 0;
-    border-color: transparent;
+  &:has(svg.icon:only-child) {
+    menu[role=toolbar] & {
+      height: fit-content;
+      padding: 0;
+    }
 
-    &:focus-visible { outline: none }
+    svg.icon {
+      --icon-size: 1em;
+      display: block;
+      width: var(--icon-size);
+      aspect-ratio: 1 / 1;
+    }
+
+    border-color: transparent;
 
     figcaption & path[pathLength] {
       stroke-dasharray: 100;
@@ -50,7 +59,10 @@ a[role=button] {
   &::before { content: var(--icon-link-external) }
 }
 
-footer button { padding-block: 1ex }
+footer button[type=submit] {
+  padding-inline: 1ch;
+  padding-block:  1ex;
+}
 
 *:disabled, [aria-disabled=true] {
   pointer-events: none;
