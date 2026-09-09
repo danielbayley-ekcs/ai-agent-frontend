@@ -14,8 +14,9 @@
 @import "motion.css";
 @import "progress.css";
 
-@import "image-card.css";
 @import "picker.css";
 @import "select-picker.css";
 @import "template-picker.css";
+
+@import "image-card.css";
 @import "preview-card.css";
