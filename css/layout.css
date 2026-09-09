@@ -25,7 +25,16 @@ main {
 }
 
 main { gap: var(--spacing) }
-nav, menu, footer { gap: var(--spacing-half) }
+nav, menu:not([role=toolbar]), footer { gap: var(--spacing-half) }
+menu[role=toolbar] {
+  align-items: center;
+  gap: 0.25rem;
+}
+
+[role=group] {
+  display: flex;
+  gap: var(--spacing);
+}
 
 header, button, [role=button], .message, figcaption code {
   text-box: trim-both ex alphabetic;
