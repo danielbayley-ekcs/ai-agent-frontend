@@ -1,8 +1,12 @@
 .format-picker,
 .format-picker-columns,
+.format-picker-column,
 .format-picker-chips { display: flex }
 
+.format-picker-column { gap: var(--spacing) }
+
 .format-picker-section,
+.format-picker-column
 .format-picker {
   flex-direction: column;
   &, .format-picker-columns { gap: var(--spacing) }
@@ -14,8 +18,6 @@
   border: var(--border);
   border-radius: var(--corner-round);
 }
-
-.format-picker-columns { gap: var(--spacing) }
 
 .format-picker-chips {
   flex-wrap: wrap;
