@@ -28,6 +28,7 @@ h5, label:not([class*=progress]) {
   font-weight: 600;
   text-transform: uppercase;
   text-wrap: nowrap;
+  &.disconnect { color: var(--color-error) }
 }
 
 .message {
