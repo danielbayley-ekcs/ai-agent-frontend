@@ -1,10 +1,10 @@
 import snarkdown from "https://esm.sh/snarkdown@2.0.0"
 
-const maxBrandSelect = 16
+const maxChips = 16
 const ms = 2000 // 2s
 
 // https://lucide.dev/icons
-const color = "currentcolor"
+const color  = "currentcolor"
 const symbol = "%"
 const svg = `
   <svg xmlns="http://www.w3.org/2000/svg"
@@ -16,7 +16,7 @@ const svg = `
     stroke-width="2"
     stroke-linecap="round"
     stroke-linejoin="round"
-    class="lucide lucide-copy-icon lucide-copy"
+    class="icon"
     role="img">
     ${symbol}
   </svg>`
@@ -70,9 +70,9 @@ const proto = location.protocol === "https:" ? "wss" : "ws"
 const origin = `${proto}://${location.host}`
 const ws = new WebSocket(`${origin}/ws/${sessionId}`)
 
-const [messages] = document.getElementsByTagName("main")
-const input      = document.querySelector("footer input")
-const submit     = document.querySelector("footer button")
+const [main] = document.getElementsByTagName("main")
+const input  = document.querySelector("footer input")
+const submit = document.querySelector("footer button")
 
 function createElement(tag, attributes = {}) {
   if (attributes.textContent) attributes.dataContent ??= attributes.textContent
@@ -88,18 +88,38 @@ function createElement(tag, attributes = {}) {
   return element
 }
 
-const postMessage = object =>
-  window.parent?.postMessage(object, "*")
+const postMessage = (type, object) =>
+  window.parent?.postMessage({ type, ...object }, "*")
 
 let ariaPosInSet = 0
 function createArticle(attributes) {
-  postMessage({ messageCount: ariaPosInSet++ })
+  ariaPosInSet++
+
   return createElement("article", { ariaSetSize: "-1", ariaPosInSet, ...attributes })
 }
 
 const createLabel   = attributes => createElement("label", attributes)
-const createDiv     = attributes => createElement("div", { role: "group", ...attributes })
+const createDiv     = attributes => createElement("div",  { role: "group",   ...attributes })
 const createToolbar = attributes => createElement("menu", { role: "toolbar", ...attributes })
+
+function createSelect(options, { id, multiple } = {}) {
+  const select = createElement("select", {
+    id,
+    required: true,
+    autofocus: true,
+    multiple,
+  })
+
+  select.append(...options.flatMap((textContent, i) => {
+    const separators = []
+    const previous = options.at(i - 1)
+    if (previous && textContent.charAt(0) !== previous.charAt(0)) separators.push(createElement("hr"))
+
+    const option = createElement("option", { value: textContent, textContent })
+    return separators.concat(option)
+  }))
+  return select
+}
 
 function createButton(attributes, icon, onClick) {
   attributes.type ??= "button"
@@ -116,15 +136,17 @@ function createToggleButton(attributes, icon, onClick, timeout) {
   const button = createButton(attributes, icon)
   button.ariaPressed ??= false
 
-  button.addEventListener("click", event => {
-    event.target.ariaPressed = event.target.ariaPressed !== "true"
+  button.addEventListener("click", ({ target }) => {
+    if (!target) return
+
+    target.ariaPressed = target.ariaPressed !== "true"
     onClick?.call?.(null, event)
     if (!pressed) return
 
     if (timeout)
-      setTimeout(() => event.target.innerHTML = icon, timeout)
+      setTimeout(() => target.innerHTML = icon, timeout)
     else
-      event.target.innerHTML = pressed
+      target.innerHTML = pressed
   })
   return button
 }
@@ -139,19 +161,19 @@ const createLink = (className, href, textContent) =>
     textContent,
   })
 
-const disable = (...elements) =>
+const disable = (...elements) => able(true,  ...elements)
+const enable  = (...elements) => able(false, ...elements)
+function able(boolean, ...elements) {
+  main.ariaBusy = boolean
   elements.forEach(element => {
-    element.disabled = true
-    element.ariaDisabled = true
-  })
+    if (!element) return
 
-const enable = (...elements) =>
-  elements.forEach(element => {
-    element.disabled = false
-    element.ariaDisabled = false
+    element.disabled = boolean
+    element.ariaDisabled = boolean
   })
+}
 
-const autoScroll = () => messages.scrollTop = messages.scrollHeight
+const autoScroll = () => main.scrollTop = main.scrollHeight
 
 const clipboardCopy = content => content && navigator.clipboard.writeText(content)
 
@@ -171,12 +193,100 @@ function appendMessage(text, type) {
     ? createElement("h5", { className })
     : createArticle({ className })
 
-  if (type === "received" || type === "error") element.innerHTML = renderMarkdown(text)
-  else element.textContent = text
+  if (type === "received" || type === "error") {
+    element.innerHTML = renderMarkdown(text)
+    postMessage("received")
+  } else {
+    element.textContent = text
+    if (type === "disconnect") postMessage("received")
+  }
 
-  messages.appendChild(element)
+  main.appendChild(element)
   autoScroll()
 }
+
+const capitalize  = string => string.charAt(0).toUpperCase() + string.slice(1)
+const singularize = string => string.replace(/s$/, "")
+
+function renderPicker(list, id, multiple = false) {
+  let textContent = `Select ${capitalize(id)}`
+  const className = `${id}-picker`
+  id = `${id}s`
+  const article = createArticle({ className, id: className })
+
+  if (multiple) textContent += "(s)"
+
+  article.appendChild(createLabel({
+    className: `${className}-label`,
+    htmlFor: id,
+    textContent,
+  }))
+
+  const ok = createButton({
+    type: "submit",
+    className: `${className}-ok`,
+    textContent: "OK",
+  })
+
+  if (list.length > maxChips) {
+    const div = createDiv()
+    const select = createSelect(list, { id, multiple })
+    div.appendChild(select)
+
+    ok.addEventListener("click", () => {
+      disable(select, ok)
+
+      const selected = multiple ? [...select.options]
+        .filter(option => option.selected)
+        .map(option => option.value)
+        .join(" + ") : select.value
+
+      sendMessageText(selected)
+    })
+
+    div.appendChild(ok)
+    article.appendChild(div)
+  } else {
+    const buttons = createDiv({ id, className: `${className}-chips` })
+
+    if (multiple) {
+      const className = `${singularize(id)}-chip`
+      const selected  = new Set()
+
+      buttons.ariaMultiSelectable = true
+      buttons.append(...list.map(textContent =>
+        createToggleButton({ className, textContent }, null, event => {
+          if (event.currentTarget.ariaPressed === "true") selected.add(textContent)
+          else selected.delete(textContent)
+
+          if (selected.size > 0) enable(ok)
+          else disable(ok)
+        })))
+
+      ok.addEventListener("click", () => {
+        disable(...article.querySelectorAll(`.${className}`), ok)
+        sendMessageText([...selected].join(" + "))
+      })
+    } else {
+      const className = `${singularize(id)}-chip`
+
+      buttons.role = "radiogroup"
+      buttons.append(...list.map(textContent =>
+        createToggleButton({ className, textContent }, null, () => {
+          disable(...article.querySelectorAll(`.${className}`))
+          sendMessageText(textContent)
+        })))
+    }
+    article.appendChild(buttons)
+    article.appendChild(ok)
+  }
+
+  main.appendChild(article)
+  autoScroll()
+}
+
+const renderBrandPicker = brands => renderPicker(brands, "brand")
+const renderSizePicker  = sizes  => renderPicker(sizes, "size", true)
 
 function renderFormatPicker(data) {
   const isDigital = data.size_label === "Ad Format"
@@ -202,33 +312,38 @@ function renderFormatPicker(data) {
 
   const className = "format-picker"
   const article = createArticle({ className })
+  const buttons = []
   const ok = createButton({
     type: "submit",
-    className: "format-picker-ok",
+    className: `${className}-ok`,
     textContent: "OK",
   })
 
-  function makeColumn(key, textContent, options, multiSelect) {
+  function makeColumn(id, textContent, options, multiSelect) {
     if (!options?.length) return null
 
     if (multiSelect) textContent += "(s)"
 
     const div = createDiv({ className: `${className}-column` })
-    div.appendChild(createLabel({ className: `${className}-label`, textContent }))
+    div.appendChild(createLabel({ className: `${className}-label`, htmlFor: id, textContent }))
 
-    const chips = createDiv({ className: `${className}-chips` })
-    const buttons = options.map(textContent => {
+    const chips = createDiv({ id, className: `${className}-chips` })
+    if (multiSelect) chips.ariaMultiSelectable = true
+    else chips.role = "radiogroup"
+
+    buttons.concat(options.map(textContent => {
       const className = "format-chip"
-      const button = createToggleButton({ className, textContent }, null, ({ target }) => {
+      const button = createToggleButton({ className, textContent }, null, ({ currentTarget }) => {
         if (multiSelect) {
-          if (target.ariaPressed && !selections[key].includes(textContent))
-            selections[key].push(textContent)
+          if (currentTarget.ariaPressed && !selections[id].includes(textContent))
+            selections[id].push(textContent)
           else
-            selections[key] = selections[key].filter(out => out !== textContent)
+            selections[id] = selections[id].filter(out => out !== textContent)
         } else {
+          const buttons = chips.querySelectorAll(`.${className}`)
           buttons.forEach(button => button.ariaPressed = false)
-          target.ariaPressed = true
-          selections[key] = textContent
+          currentTarget.ariaPressed = true
+          selections[id] = textContent
         }
         const sizeOk  = !hasSizes  || (isDigital ? selections.size.length > 0 : !!selections.size)
         const styleOk = !hasStyles || !!selections.style
@@ -237,30 +352,31 @@ function renderFormatPicker(data) {
         if (sizeOk && styleOk && themeOk) enable(ok)
         else disable(ok)
       })
+      button.role = multiSelect ? "option" : "radio"
+
 
       chips.appendChild(button)
       return button
-    })
+    }))
 
     div.appendChild(chips)
     return div
   }
 
-  const sizeSection  = makeColumn("size", data.size_label || "Page Size", data.sizes, isDigital)
+  const sizeSection  = makeColumn("size", data.size_label || "Page Size(s)", data.sizes, isDigital)
   const styleSection = makeColumn("style", "Style", data.styles)
   const themeSection = makeColumn("theme", "Theme", data.themes)
 
   // Sections in a horizontal row so all are visible at once
-  const div = createDiv({ className: "format-picker-columns" })
+  const div = createDiv({ className: `${className}-columns` })
   if (sizeSection)  div.appendChild(sizeSection)
   if (styleSection) div.appendChild(styleSection)
   if (themeSection) div.appendChild(themeSection)
   article.appendChild(div)
 
   ok.addEventListener("click", () => {
-    const chips = article.querySelectorAll(".format-chip")
-    chips.forEach(element => disable(element))
-    disable(ok)
+    const buttons = article.querySelectorAll(".format-chip")
+    disable(...buttons, ok)
 
     const sizeVal = isDigital ? selections.size.join(" + ") : selections.size
     const parts = [sizeVal, selections.style, selections.theme].filter(Boolean)
@@ -268,7 +384,7 @@ function renderFormatPicker(data) {
   })
 
   article.appendChild(ok)
-  messages.appendChild(article)
+  main.appendChild(article)
   autoScroll()
 }
 
@@ -288,7 +404,7 @@ function renderProgressCard(textContent) {
   const label = createLabel({ className, textContent })
 
   card.append(div, label)
-  messages.appendChild(card)
+  main.appendChild(card)
   autoScroll()
   _progressCard = card
 }
@@ -301,11 +417,9 @@ function updateProgressCard(label) {
 function removeProgressCard() {
   if (!_progressCard) return
 
+  ariaPosInSet--
   _progressCard.remove()
   _progressCard = null
-
-  ariaPosInSet++
-  postMessage({ ariaPosInSet })
 }
 
 function renderPreviewCard(data) {
@@ -353,7 +467,7 @@ function renderPreviewCard(data) {
       className: "preview",
       title: "Preview template",
     }, icons.preview, () => window.parent
-      ? postMessage({ campaign: data.previewUrl })
+      ? postMessage("toolbar", { campaign: data.previewUrl })
       : window.open(data.previewUrl, "_blank").focus()))
 
     toolbar.append(...buttons)
@@ -379,13 +493,10 @@ function renderPreviewCard(data) {
     })
 
     if (data.previewUrl) buttons.appendChild(createLink(btn, data.previewUrl, "Preview all sizes"))
-
   } else {
     if (data.editorUrl) buttons.appendChild(createLink(btn, data.editorUrl, "Edit"))
-
-    if (data.pdfUrl) buttons.appendChild(createLink(btn, data.pdfUrl, "Download PDF"))
-
-    if (data.jpgUrl) buttons.appendChild(createLink(btn, data.jpgUrl, "Download JPG"))
+    if (data.pdfUrl)    buttons.appendChild(createLink(btn, data.pdfUrl, "Download PDF"))
+    if (data.jpgUrl)    buttons.appendChild(createLink(btn, data.jpgUrl, "Download JPG"))
 
     if (data.shareUrl) {
       const button = createButton({
@@ -404,65 +515,7 @@ function renderPreviewCard(data) {
       buttons.appendChild(button)
     }
   }
-  messages.append(article, buttons)
-  autoScroll()
-}
-
-function renderBrandPicker(brands) {
-  const className = "brand-picker"
-  const article = createArticle({ id: className })
-  const id = "brands"
-
-  article.appendChild(createLabel({
-    className: `${className}-label`,
-    htmlFor: id,
-    textContent: "Select a Brand",
-  }))
-
-  if (brands.length > maxBrandSelect) {
-    const div = createDiv()
-    const select = createElement("select", {
-      id,
-      required: true,
-      autofocus: true,
-    })
-    select.append(...brands.flatMap((textContent, i) => {
-      const options  = []
-      const previous = brands[i - 1]
-      if (previous && textContent.charAt(0) !== previous.charAt(0)) options.push(createElement("hr"))
-
-      const option = createElement("option", { value: textContent, textContent })
-      return options.concat(option)
-    }))
-    div.appendChild(select)
-
-    const ok = createButton({
-      type: "submit",
-      className: `${className}-ok`,
-      textContent: "OK",
-    })
-    ok.addEventListener("click", () => {
-      disable(select, ok)
-      sendMessageText(select.value)
-    })
-    div.appendChild(ok)
-    article.appendChild(div)
-  } else {
-    const buttons = createDiv({ id })
-    brands.forEach(textContent => {
-      const className = "brand-chip"
-      const button = createButton({ className, textContent })
-      button.addEventListener("click", () => {
-        const chips = article.querySelectorAll(`.${className}`)
-        chips.forEach(button => disable(button))
-        sendMessageText(textContent)
-      })
-      buttons.appendChild(button)
-    })
-    article.appendChild(buttons)
-  }
-
-  messages.appendChild(article)
+  main.append(article, buttons)
   autoScroll()
 }
 
@@ -488,9 +541,7 @@ function renderTemplatePicker(templates, stream) {
     if (!template.thumbnail) img.classList.add(`${className}-placeholder`)
 
     img.addEventListener("click", () => {
-      cells.forEach(element => disable(element))
-      if (button) disable(button)
-
+      disable(...cells, button)
       cell.ariaSelected = true
       sendMessageText(template.name)
     })
@@ -512,19 +563,6 @@ function renderTemplatePicker(templates, stream) {
     }, icons.preview, () =>
       template.thumbnail && window.open(template.thumbnail, "_blank").focus()))
 
-    const buttonPreview = createButton({
-      className: "preview",
-      title: "Preview template",
-      innerHTML: icons.eye,
-    })
-    buttonPreview.addEventListener("click", async () => {
-      if (!template.name) return
-
-      await navigator.clipboard.writeText(template.name)
-      buttonPreview.innerHTML = icons.copied
-      buttonPreview.ariaPressed = true
-    })
-
     toolbar.append(...buttons)
     caption.append(file, toolbar)
 
@@ -535,18 +573,18 @@ function renderTemplatePicker(templates, stream) {
   if (stream === "digital") {
     const textContent = "Let the system choose a template"
 
-    button = createButton({
+    button ??= createButton({
       className: "system-choose-btn",
       textContent,
     }, null, () => {
-      cells.forEach(cell => disable(cell))
-      disable(button)
+      disable(...cells, button)
       button.classList.add("used")
       sendMessageText(textContent)
     })
   }
 
-  messages.append(article, button)
+  main.appendChild(article)
+  if (button) main.appendChild(button)
   autoScroll()
 }
 
@@ -566,18 +604,28 @@ function renderQuickChips(chips) {
     })
     div.appendChild(button)
   })
-  messages.appendChild(div)
+  main.appendChild(div)
   autoScroll()
 }
 
+function receiveMessage(event) {
+  if (ws.readyState !== ws.OPEN) return
+
+  ws.send(JSON.stringify(event.data))
+}
+
+
 ws.onopen = () => {
-  disable(submit)
+  window.addEventListener("message", receiveMessage)
   appendMessage("Connected", "connect")
+  disable(submit)
 }
 
 ws.onclose = () => {
   disable(input, submit)
+  removeProgressCard()
   appendMessage("Disconnected", "disconnect")
+  window.removeEventListener("message", receiveMessage)
 }
 
 ws.onerror = () => appendMessage("Connection error", "error")
@@ -587,22 +635,26 @@ ws.onmessage = event => {
 
   switch (data.type) {
     case "template_picker": renderTemplatePicker(data.templates, data.stream)
+      postMessage("received")
       break
     case "format_picker": renderFormatPicker(data)
+      postMessage("received")
+      break
+    case "size_picker": renderSizePicker(data.sizes)
       break
     case "brand_picker": renderBrandPicker(data.brands)
+      postMessage("received")
       break
     case "preview_card": renderPreviewCard(data)
+      postMessage("received")
       break
     case "progress":
       switch (data.status) {
         case "start": renderProgressCard(data.label || "Working…")
-          messages.ariaBusy = true
           break
         case "update": updateProgressCard(data.label || "")
           break
         case "end": removeProgressCard()
-          messages.ariaBusy = false
       }
       break
     default:
