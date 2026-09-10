@@ -22,7 +22,9 @@ figure {
   figcaption {
     display: flex;
     justify-content: space-between;
+    gap: 0.25rem;
     padding-inline: var(--spacing);
+    padding-inline-end: var(--spacing-half);
 
     code {
       padding-inline: 0;

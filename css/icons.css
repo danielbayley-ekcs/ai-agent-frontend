@@ -30,14 +30,8 @@
 }
 
 svg[class|=icon] {
+  --icon-size: 1em;
   aspect-ratio: 1 / 1;
-  width: auto;
-  height: 2ex;
-  &:not(:only-child, menu[role=toolbar] &) {
-    display: inline-block;
-    vertical-align: text-bottom;
-    height: calc(1cap + 2px);
-  }
 
   fill: none;
   stroke: currentcolor;

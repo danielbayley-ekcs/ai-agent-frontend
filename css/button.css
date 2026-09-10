@@ -21,13 +21,14 @@ button, [role=button] {
 
   &:has(svg[class|=icon]:only-child) {
     menu[role=toolbar] & {
-      height: fit-content;
       padding: 0;
+      border: none;
     }
 
-    svg[class|=icon] { display: block }
-
-    border-color: transparent;
+    svg[class|=icon] {
+      height: fit-content;
+      max-width: var(--icon-size);
+    }
 
     figcaption & path[pathLength] {
       stroke-dasharray: 100;
