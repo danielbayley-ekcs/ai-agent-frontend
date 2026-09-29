@@ -1,6 +1,7 @@
 .preview-card {
   align-self: flex-start;
   background-color: var(--color-grey-light);
+  figcaption { gap: var(--spacing-half) }
 }
 
 .preview-card-btns {
