@@ -466,9 +466,7 @@ function renderPreviewCard(data) {
     buttons.push(createToggleButton({
       className: "preview",
       title: "Preview ad",
-    }, icons.preview, () => window.parent
-      ? postMessage("toolbar", { campaign: data.previewUrl })
-      : window.open(data.previewUrl, "_blank").focus()))
+    }, icons.preview, () => data.previewUrl && window.open(data.previewUrl, "_blank").focus()))
 
     toolbar.append(...buttons)
     caption.append(id, toolbar)
