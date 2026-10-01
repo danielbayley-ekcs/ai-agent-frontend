@@ -183,6 +183,9 @@ function renderMarkdown(text) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
 
+    // Prevent certain LLM responses from being parsed as italic
+    .replace(/(?<!_)_(?=[A-Za-z0-9]|\b)/g, "\\_")
+
   return snarkdown(escaped)
 }
 
