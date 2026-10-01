@@ -136,17 +136,16 @@ function createToggleButton(attributes, icon, onClick, timeout) {
   const button = createButton(attributes, icon)
   button.ariaPressed ??= false
 
-  button.addEventListener("click", ({ target }) => {
-    if (!target) return
+  button.addEventListener("click", event => {
+    const { target, currentTarget = target } = event
+    if (!currentTarget) return
 
-    target.ariaPressed = target.ariaPressed !== "true"
+    currentTarget.ariaPressed = currentTarget.ariaPressed !== "true"
     onClick?.call?.(null, event)
     if (!pressed) return
 
-    if (timeout)
-      setTimeout(() => target.innerHTML = icon, timeout)
-    else
-      target.innerHTML = pressed
+    currentTarget.innerHTML = pressed
+    if (timeout) setTimeout(() => currentTarget.innerHTML = icon, timeout)
   })
   return button
 }
