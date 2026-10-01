@@ -476,9 +476,9 @@ function renderPreviewCard(data) {
   }
 
   const buttons = createDiv({ className: `${className}-buttons` })
+  const button = `${className}-button`
 
   if (data.stream === "digital") {
-    const button = `${className}-button`
     const ad = data.adName ? data.adName.replace(/^Digital_/i, "").trim() : "Ad"
 
     if (data.adUrl && data.showPrimaryButton)
