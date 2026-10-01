@@ -6,5 +6,6 @@
 
 .preview-card-buttons {
   display: flex;
+  flex-wrap: balance;
   gap: var(--spacing-half);
 }
