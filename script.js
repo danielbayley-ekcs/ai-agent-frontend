@@ -475,28 +475,28 @@ function renderPreviewCard(data) {
     figure.appendChild(caption)
   }
 
-  const buttons = createDiv({ className: `${className}-btns` })
+  const buttons = createDiv({ className: `${className}-buttons` })
 
   if (data.stream === "digital") {
-    const btn = `${className}-btn`
+    const button = `${className}-button`
     const ad = data.adName ? data.adName.replace(/^Digital_/i, "").trim() : "Ad"
 
     if (data.adUrl && data.showPrimaryButton)
-      buttons.appendChild(createLink(btn, data.adUrl, `View ${ad}`))
+      buttons.appendChild(createLink(button, data.adUrl, `View ${ad}`))
 
     const extraAds = data.extraAds || []
     extraAds.forEach(extra => {
       if (!extra.url) return
 
       const ad = extra.name ? extra.name.replace(/^Digital_/i, "").trim() : "Ad"
-      buttons.appendChild(createLink(btn, extra.url, `View ${ad}`))
+      buttons.appendChild(createLink(button, extra.url, `View ${ad}`))
     })
 
-    if (data.previewUrl) buttons.appendChild(createLink(btn, data.previewUrl, "Preview all sizes"))
+    if (data.previewUrl) buttons.appendChild(createLink(button, data.previewUrl, "Preview all sizes"))
   } else {
-    if (data.editorUrl) buttons.appendChild(createLink(btn, data.editorUrl, "Edit"))
-    if (data.pdfUrl)    buttons.appendChild(createLink(btn, data.pdfUrl, "Download PDF"))
-    if (data.jpgUrl)    buttons.appendChild(createLink(btn, data.jpgUrl, "Download JPG"))
+    if (data.editorUrl) buttons.appendChild(createLink(button, data.editorUrl, "Edit"))
+    if (data.pdfUrl)    buttons.appendChild(createLink(button, data.pdfUrl, "Download PDF"))
+    if (data.jpgUrl)    buttons.appendChild(createLink(button, data.jpgUrl, "Download JPG"))
 
     if (data.shareUrl) {
       const button = createButton({
@@ -574,7 +574,7 @@ function renderTemplatePicker(templates, stream) {
     const textContent = "Let the system choose a template"
 
     button ??= createButton({
-      className: "system-choose-btn",
+      className: "system-choose-button",
       textContent,
     }, null, () => {
       disable(...cells, button)

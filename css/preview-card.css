@@ -4,7 +4,7 @@
   figcaption { gap: var(--spacing-half) }
 }
 
-.preview-card-btns {
+.preview-card-buttons {
   display: flex;
   gap: var(--spacing-half);
 }
