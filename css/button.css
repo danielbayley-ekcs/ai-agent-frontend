@@ -44,7 +44,7 @@ button, [role=button] {
     border: var(--border);
   }
   &[aria-pressed=true] {
-    background-color: var(--color-primary);
+    &:not([role="toolbar"]) & { background-color: var(--color-primary) }
     border-color: transparent;
   }
 }
