@@ -89,7 +89,7 @@ function createElement(tag, attributes = {}) {
 }
 
 const postMessage = (type, object) =>
-  window.parent?.postMessage({ type, ...object }, "*")
+  window.parent?.postMessage({ type, ...object, timestamp: new Date() }, "*")
 
 let ariaPosInSet = 0
 function createArticle(attributes) {
