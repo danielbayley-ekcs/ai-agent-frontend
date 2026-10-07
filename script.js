@@ -609,7 +609,8 @@ function renderQuickChips(chips) {
 }
 
 function receiveMessage(event) {
-  if (event.origin !== location.origin || ws.readyState !== ws.OPEN) return
+  if (location.hostname !== "localhost" && event.origin !== location.origin) return
+  if (ws.readyState !== ws.OPEN) return
 
   ws.send(JSON.stringify(event.data))
 }
