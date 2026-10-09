@@ -70,6 +70,9 @@ const proto = location.protocol === "https:" ? "wss" : "ws"
 const origin = `${proto}://${location.host}`
 const ws = new WebSocket(`${origin}/ws/${sessionId}`)
 
+console.debug("Standalone frontend origin:", origin)
+console.debug("Standalone frontend location.origin:", location.origin)
+
 const [main] = document.getElementsByTagName("main")
 const input  = document.querySelector("footer input")
 const submit = document.querySelector("footer button")
@@ -609,7 +612,7 @@ function renderQuickChips(chips) {
 }
 
 function receiveMessage(event) {
-  if (location.hostname !== "localhost" && event.origin !== location.origin) return
+  console.debug("Standalone frontend event.origin:", event.origin)
   if (ws.readyState !== ws.OPEN) return
 
   ws.send(JSON.stringify(event.data))
@@ -622,14 +625,15 @@ ws.onopen = () => {
   disable(submit)
 }
 
-ws.onclose = () => {
+ws.onclose = (...closed) => {
+  console.debug(closed)
   disable(input, submit)
   removeProgressCard()
   appendMessage("Disconnected", "disconnect")
   window.removeEventListener("message", receiveMessage)
 }
 
-ws.onerror = () => appendMessage("Connection error", "error")
+ws.onerror = (...error) => console.debug("WebSocket error!", error) ?? appendMessage("Connection error", "error")
 
 ws.onmessage = event => {
   const data = JSON.parse(event.data)
