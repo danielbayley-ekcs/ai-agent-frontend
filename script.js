@@ -66,8 +66,8 @@ const sessionId = typeof crypto.randomUUID === "function"
     return (char === "x" ? random : (random & 0x3 | 0x8)).toString(16)
   })
 
-const proto = location.protocol === "https:" ? "wss" : "ws"
-const origin = `${proto}://${location.host}`
+const scheme = location.protocol === "https:" ? "wss" : "ws"
+const origin = `${scheme}://${location.host}`
 const ws = new WebSocket(`${origin}/ws/${sessionId}`)
 
 const [main] = document.getElementsByTagName("main")
