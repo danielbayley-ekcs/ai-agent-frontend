@@ -88,8 +88,26 @@ function createElement(tag, attributes = {}) {
   return element
 }
 
-const postMessage = (type, object) =>
-  window.parent?.postMessage({ type, ...object, timestamp: new Date() }, "*")
+const port = 3000
+const env = {
+  development: "-dev",
+  staging: "-staging",
+  production: "v2",
+}
+
+function hasParent() {
+  try {
+    return window.parent.origin !== location.origin
+  } catch ({ name }) {
+    return name === "SecurityError"
+  }
+}
+
+let targetOrigin = location.hostname === "localhost"
+  ? hasParent() ? `${location.protocol}//${location.hostname}:${port}` : "/" : undefined
+
+const postMessage = (type, object) => console.debug(targetOrigin) ??
+  window.parent?.postMessage({ type, ...object, timestamp: new Date() }, targetOrigin)
 
 let ariaPosInSet = 0
 function createArticle(attributes) {
@@ -609,7 +627,14 @@ function renderQuickChips(chips) {
 }
 
 function receiveMessage(event) {
-  if (event.origin !== location.origin || ws.readyState !== ws.OPEN) return
+  if (location.hostname !== "localhost" && event.origin !== location.origin) return
+
+  if (event.data?.env) {
+    targetOrigin = `${location.protocol}//sdai${env[event.data.env]}.mediaferry.com`
+    console.debug("Env from React wrapper:", event.data.env, targetOrigin)
+  }
+
+  if (ws.readyState !== ws.OPEN) return
 
   ws.send(JSON.stringify(event.data))
 }
@@ -634,6 +659,12 @@ ws.onmessage = event => {
   const data = JSON.parse(event.data)
 
   switch (data.type) {
+    case "context":
+      if (location.hostname !== "localhost" && data.env) {
+        targetOrigin ??= `${location.protocol}//sdai${env[data.env]}.mediaferry.com`
+        console.debug("Context from Python backend:", data, targetOrigin)
+      }
+      break
     case "template_picker": renderTemplatePicker(data.templates, data.stream)
       postMessage("received")
       break
