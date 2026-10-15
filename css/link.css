@@ -1,6 +1,7 @@
 a:not([role=button]) {
   text-decoration: inherit;
   text-decoration-skip-ink: auto;
+  word-wrap: break-word;
   color: var(--color-link);
   cursor: pointer;
   &:hover { text-decoration: underline }
